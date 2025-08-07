@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   datasource:
@@ -21,6 +21,15 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+
+  kakao:
+    client-id: b4b2d8c256a781c939214bc2360fef37
+    redirect-uri: http://localhost:8080/user/auth/login
+    client-secret: VtEJApm3TPWTu7aDuvlmrwzDg8klmhcw
+
+  cloud:
+    compatibility-verifier:
+      enabled: false
 
 jwt:
   expires-in: 86400
