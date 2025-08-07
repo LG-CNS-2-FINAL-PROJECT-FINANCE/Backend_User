@@ -21,13 +21,13 @@ public class KakaoOAuthService {
     private final String KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
     private final String KAKAO_USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
 
-    @Value("${kakao.client-id}")
+    @Value("${spring.kakao.client-id}")
     private String clientId;
 
-    @Value("${kakao.redirect-uri}")
+    @Value("${spring.kakao.redirect-uri}")
     private String redirectUri;
 
-    @Value("${kakao.client-secret}")
+    @Value("${spring.kakao.client-secret}")
     private String clientSecret;
 
     public String getAccessToken(String code) {

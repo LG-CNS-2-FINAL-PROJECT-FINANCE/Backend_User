@@ -20,13 +20,10 @@ import java.time.Period;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final KakaoOAuthService kakaoOAuthService;
-    private final TokenGenerator tokenGenerator;
-    private final KafkaMessageProducer kafkaMessageProducer;
 
     // 회원가입
     @Transactional
-    public User registerUser(UserSignUpRequest request) {
+    public void registerUser(UserSignUpRequest request) {
 
         Integer age = updateAge(request.getBirthDate());
         User user = User.builder()
@@ -46,11 +43,8 @@ public class UserService {
                 .latestAt(LocalDate.now())
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
-
-    // 관리자 로그인
-
 
     // 회원탈퇴
     @Transactional
@@ -70,32 +64,4 @@ public class UserService {
 
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
-
-    // 회원 정보 수정
-//    public void editUser(UserEditRequest request) {
-//        User user = userRepository.findByUserSeq(request.getUserSeq()).
-//    }
-
-//    @Transactional
-//    public TokenDto.AccessRefreshToken kakaoLogin(String code) {
-//        KakaoOAuthDto kakaoOAuthDto = kakaoOAuthService.getAccessToken(code);
-//        if (kakaoOAuthDto == null || kakaoOAuthDto.getAccessToken() == null) {
-//            throw new BadParameter("카카오 인증 실패");
-//        }
-//
-//        KakaoUserInfoDto kakaoUserInfoDto = kakaoOAuthService.getUserInfo(kakaoOAuthDto.getAccessToken());
-//        if (kakaoUserInfoDto == null) {
-//            throw new BadParameter("사용자 정보를 가져오지 못함");
-//        }
-//
-//        User user = userRepository.findByKakaoId(kakaoUserInfoDto.getId().toString());
-//        if (user == null) {
-//            user = createNewUser(kakaoUserInfoDto);
-//        }
-//    }
-//
-//    private User createNewUser(KakaoUserInfoDto kakaoUserInfoDto) {
-//        User user = new User();
-//        user.set
-//    }
 }
