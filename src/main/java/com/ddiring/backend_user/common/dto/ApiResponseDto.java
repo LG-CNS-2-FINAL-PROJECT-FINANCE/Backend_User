@@ -10,12 +10,12 @@ public class ApiResponseDto<T> {
     private String message;
     private T data;
 
-    private ApiResponseDto(String code, String message) {
+    public ApiResponseDto(String code, String message) {
         this.code = code;
         this.message = message;
     }
 
-    private ApiResponseDto(String code, String message, T data) {
+    public ApiResponseDto(String code, String message, T data) {
         this.code = code;
         this.message = message;
         this.data = data;
@@ -31,9 +31,5 @@ public class ApiResponseDto<T> {
 
     public static ApiResponseDto<String> createError(String code, String message) {
         return new ApiResponseDto<>(code, message);
-    }
-
-    public static <T> ApiResponseDto<T> createError(String code, String message, T data) {
-        return new ApiResponseDto<>(code, message, data);
     }
 }
