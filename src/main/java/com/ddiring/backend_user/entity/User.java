@@ -23,6 +23,9 @@ public class User {
     @Column(name = "kakao_id", unique = true)
     private String kakaoId;
 
+    @Column(name = "admin_id", unique = true)
+    private String adminId;
+
     @Column(name = "user_name", nullable = false)
     private String userName;
 

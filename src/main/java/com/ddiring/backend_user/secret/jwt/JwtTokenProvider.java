@@ -36,6 +36,22 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String AdminCreateToken(User user) {
+        Claims claims = Jwts.claims().setSubject(user.getKakaoId()).build();
+        claims.put("role", user.getRole().name());
+        claims.put("userSeq", user.getUserSeq());
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expireIn);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes(StandardCharsets.UTF_8))
+                .compact();
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser()

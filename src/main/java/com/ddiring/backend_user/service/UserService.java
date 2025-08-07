@@ -49,6 +49,9 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // 관리자 로그인
+
+
     // 회원탈퇴
     @Transactional
     public void deleteUser(Integer userSeq) {
