@@ -1,6 +1,8 @@
 package com.ddiring.backend_user.controller;
 
+import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
+import com.ddiring.backend_user.dto.request.UserLoginRequest;
 import com.ddiring.backend_user.dto.request.UserSignUpRequest;
 import com.ddiring.backend_user.dto.response.UserInfoResponse;
 import com.ddiring.backend_user.entity.User;
@@ -12,7 +14,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -48,23 +49,21 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> kakaoLogin(
             @RequestParam("code") String code,
-            @RequestParam("role") String roleStr,
-            @RequestParam("gender") String genderStr,
-            @RequestParam("birthDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDate
-    ) {
+            @RequestBody UserLoginRequest request
+            ) {
         String accessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(accessToken);
 
         User.Role role;
         try {
-            role = User.Role.valueOf(roleStr.toUpperCase());
+            role = User.Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("역할을 지정해주세요.");
         }
 
         User.Gender gender;
         try {
-            gender = User.Gender.valueOf(genderStr.toUpperCase());
+            gender = User.Gender.valueOf(request.getGender().toUpperCase());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("성별을 입력해주세요.");
         }
@@ -75,14 +74,15 @@ public class UserController {
             return userRepository.save(User.builder()
                     .kakaoId(userInfo.getKakaoId())
                     .email(userInfo.getEmail())
+                    .userName(request.getUserName())
+                    .nickname(request.getNickname())
                     .role(role)
-                    .nickname("kakao_" +userInfo.getKakaoId())
                     .gender(gender)
-                    .birthDate(birthDate)
+                    .birthDate(request.getBirthDate())
                     .createdAt(LocalDate.now())
                     .updatedAt(LocalDate.now())
-                    .createdId(0)
-                    .updatedId(0)
+                    .createdId(request.getUserSeq())  
+                    .updatedId(request.getUserSeq())
                     .latestAt(LocalDate.now())
                     .user_status(User.UserStatus.ACTIVE)
                     .build());
@@ -91,22 +91,19 @@ public class UserController {
         String token = jwtTokenProvider.createToken(user);
 
         return ResponseEntity.ok()
-                .header("Authorization", "Bearer" + token)
+                .header("Authorization", "Bearer " + token)
                 .body("로그인 성공");
     }
 
     // 관리자 회원가입
     @PostMapping("/admin/signup")
-    public ResponseEntity<?> registerAdmin(
-            @RequestParam String adminId,
-            @RequestParam String password
-    ) {
-        if (userRepository.existsByAdminId(adminId)) {
+    public ResponseEntity<?> registerAdmin(@RequestBody AdminRequest request) {
+        if (userRepository.existsByAdminId(request.getAdminId())) {
             return ResponseEntity.badRequest().body("이미 존재하는 아이디입니다.");
         }
 
         User admin = User.builder()
-                .adminId(adminId)
+                .adminId(request.getAdminId())
                 .password(passwordEncoder.encode(rawPassword))
                 .role(User.Role.ADMIN)
                 .build();
@@ -118,11 +115,8 @@ public class UserController {
 
     // 관리자 로그인
     @PostMapping("/admin/login")
-    public ResponseEntity<?> adminLogin(
-            @RequestParam("userSeq") String adminId,
-            @RequestParam("password") String password
-    ) {
-        Optional<User> admin = userRepository.findByAdminId(adminId);
+    public ResponseEntity<?> adminLogin(@RequestBody AdminRequest request) {
+        Optional<User> admin = userRepository.findByAdminId(request.getAdminId());
 
         if (admin.isEmpty()) {
             return ResponseEntity.badRequest().body("존재하지 않는 계정입니다.");
@@ -134,14 +128,14 @@ public class UserController {
             return ResponseEntity.badRequest().body("관리자 권한이 없습니다.");
         }
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 틀렸습니다.");
         }
 
         String token = jwtTokenProvider.AdminCreateToken(user);
 
         return ResponseEntity.ok()
-                .header("Authorization", "Bearer" + token)
+                .header("Authorization", "Bearer " + token)
                 .body("관리자 로그인 성공");
     }
 

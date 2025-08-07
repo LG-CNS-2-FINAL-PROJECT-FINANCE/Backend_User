@@ -72,4 +72,22 @@ public class JwtTokenProvider {
                 .getBody()
                 .getSubject();
     }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        List<? extends SimpleGrantedAuthority> authorities = Arrays
+                .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
+                claims.getSubject(), "", authorities);
+
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+    }
 }

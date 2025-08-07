@@ -1,5 +1,7 @@
 package com.ddiring.backend_user.config;
 
+import com.ddiring.backend_user.secret.jwt.JwtAuthenticationFilter;
+import com.ddiring.backend_user.secret.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,8 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.example.study_monster_back.jwt.JwtAuthenticationFilter;
-import com.example.study_monster_back.jwt.JwtTokenProvider;
+
+import static org.springframework.aot.generate.ValueCodeGenerator.withDefaults;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
