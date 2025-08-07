@@ -2,48 +2,22 @@
 def APP_NAME
 def APP_VERSION
 def DOCKER_IMAGE_NAME
-def PROD_BUILD = false
-def TAG_BUILD = false
+
 pipeline {
-    agent {
-        node {
-            label 'master'
-        }
-    }
-
-    parameters {
-        gitParameter branch: '',
-                    branchFilter: '.*',
-                    defaultValue: 'origin/main',
-                    description: '', listSize: '0',
-                    name: 'TAG',
-                    quickFilterEnabled: false,
-                    selectedValue: 'DEFAULT',
-                    sortMode: 'DESCENDING_SMART',
-                    tagFilter: '*',
-                    type: 'PT_BRANCH_TAG'
-
-        booleanParam defaultValue: false, description: '', name: 'RELEASE'
-    }
+    agent any
 
     environment {
-        GIT_URL = "https://github.com/LG-CNS-2-FINAL-PROJECT-FINANCE/Backend_User.git"
-        GITHUB_CREDENTIAL = "github-token"
-        ARTIFACTS = "build/libs/**"
-        DOCKER_REGISTRY = "rnals12"
-        DOCKERHUB_CREDENTIAL = 'dockerhub-token'
-    }
+        REGISTRY_HOST = "192.168.56.200:5000"
+        USER_EMAIL = 'ssassaium@gmail.com'
+        USER_ID = 'kaebalsaebal'
+        SERVICE_NAME = 'user'
 
-    options {
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: "30", artifactNumToKeepStr: "30"))
-        timeout(time: 120, unit: 'MINUTES')
     }
 
     tools {
-        gradle 'Gradle 8.14.2'
-        jdk 'OpenJDK 17'
-        dockerTool 'Docker'
+        gradle 'Gradle 8.14.2' // 젠킨스 Tools의 Gradle 이름
+        jdk 'OpenJDK 17' // 젠킨스 Tools의 JDK 이름
+        //dockerTool 'Docker' // 젠킨스 Tools의 Docker 이름
     }
 
     stages {
@@ -59,56 +33,96 @@ pipeline {
                             returnStdout: true
                     ).trim()
 
-                    DOCKER_IMAGE_NAME = "${DOCKER_REGISTRY}/${APP_NAME}:${APP_VERSION}"
+                    DOCKER_IMAGE_NAME = "${REGISTRY_HOST}/${APP_NAME}:${APP_VERSION}"
 
                     sh "echo IMAGE_NAME is ${APP_NAME}"
                     sh "echo IMAGE_VERSION is ${APP_VERSION}"
                     sh "echo DOCKER_IMAGE_NAME is ${DOCKER_IMAGE_NAME}"
+                }
+            }
+        }
 
-                    sh "echo TAG is ${params.TAG}"
-                    if( params.TAG.startsWith('origin') == false && params.TAG.endsWith('/main') == false ) {
-                        if( params.RELEASE == true ) {
-                            DOCKER_IMAGE_NAME += '-RELEASE'
-                            PROD_BUILD = true
-                        } else {
-                            DOCKER_IMAGE_NAME += '-TAG'
-                            TAG_BUILD = true
-                        }
+        stage('Checkout Dev Branch') {
+            steps {
+                // Git에서 dev 브랜치의 코드를 가져옵니다.
+                checkout scm
+            }
+        }
+
+        stage('Build Spring Boot App') {
+            steps {
+                // gradlew 권한부여
+                sh 'chmod +x gradlew'
+                // Gradlew로 빌드
+                sh './gradlew clean build'
+            }
+        }
+
+        stage('Image Build and Push to Registry') {
+            steps {
+                // 이미지 빌드
+                sh "echo Image building..."
+                sh "podman build -t ${DOCKER_IMAGE_NAME} ."
+                // 레지스트리 푸쉬
+                sh "echo Image pushing to local registry..."
+                sh "podman push ${DOCKER_IMAGE_NAME}"
+                // 로컬 이미지 제거
+                sh "podman rmi -f ${DOCKER_IMAGE_NAME} || true"
+            }
+        }
+
+        stage('Update Helm Values') {
+            steps{
+                script{
+                    withCredentials([usernamePassword(
+                        credentialsId:'github-credential',
+                        usernameVariable: 'GIT_USERNAME',
+                        passwordVariable: 'GIT_PASSWORD'
+                    )]) {
+                        def imageRepo = "${REGISTRY_HOST}/${APP_NAME}"
+                        def imageTag = "${APP_VERSION}"
+                        def MANIFEST_REPO = "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/LG-CNS-2-FINAL-PROJECT-FINANCE/Backend_Manifests.git"
+
+                        sh """
+                             # Git 사용자 정보 설정(커밋 사용자 명시땜에)
+                            git config --global user.email "${USER_EMAIL}"
+                            git config --global user.name "${USER_ID}"
+
+                            # 매니페스트 레포 클론
+                            git clone ${MANIFEST_REPO}
+                            cd Backend_Manifests
+
+                            # yq를 사용하여 개발 환경의 values 파일 업데이트
+                            yq -i '.image.repository = "${imageRepo}"' helm_chart/${SERVICE_NAME}/values-dev.yaml
+                            yq -i '.image.tag = "${imageTag}"' helm_chart/${SERVICE_NAME}/values-dev.yaml
+
+                            # 변경 사항 커밋 및 푸시
+                            if ! git diff --quiet; then
+                              git add helm_chart/${SERVICE_NAME}/values-dev.yaml
+                              git commit -m "Update image tag for dev to ${DOCKER_IMAGE_NAME} [skip ci]"
+                              git push origin master
+                            else
+                              echo "No changes to commit."
+                            fi
+                        """
                     }
                 }
             }
         }
 
-        stage('Build & Test Application') {
+        stage('Clean Workspace') {
             steps {
-                sh "gradle clean build"
+                deleteDir() // workspace 전체 정리
             }
         }
+    }
 
-        stage('Build Docker Image') {
-//             when {
-//                 expression { PROD_BUILD == true || TAG_BUILD == true }
-//             }
-            steps {
-                script {
-                    docker.build "${DOCKER_IMAGE_NAME}"
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-//             when {
-//                 expression { PROD_BUILD == true || TAG_BUILD == true }
-//             }
-            steps {
-                script {
-                    docker.withRegistry("", DOCKERHUB_CREDENTIAL) {
-                        docker.image("${DOCKER_IMAGE_NAME}").push()
-                    }
-
-                    sh "docker rmi ${DOCKER_IMAGE_NAME}"
-                }
-            }
+    // 빌드 완료 후
+    post {
+        // 성공이든, 실패든 항상 수행
+        always {
+            echo "Cleaning up workspace..."
+            deleteDir() // workspace 전체 정리
         }
     }
 }
