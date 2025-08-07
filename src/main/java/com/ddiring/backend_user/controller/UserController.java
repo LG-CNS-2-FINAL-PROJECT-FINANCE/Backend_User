@@ -54,19 +54,8 @@ public class UserController {
         String accessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(accessToken);
 
-        User.Role role;
-        try {
-            role = User.Role.valueOf(request.getRole().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("역할을 지정해주세요.");
-        }
-
-        User.Gender gender;
-        try {
-            gender = User.Gender.valueOf(request.getGender().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("성별을 입력해주세요.");
-        }
+        User.Role role = request.getRole();
+        User.Gender gender = request.getGender();
 
         Optional<User> optionalUser = userRepository.findByKakaoId(userInfo.getKakaoId());
 
@@ -81,8 +70,8 @@ public class UserController {
                     .birthDate(request.getBirthDate())
                     .createdAt(LocalDate.now())
                     .updatedAt(LocalDate.now())
-                    .createdId(request.getUserSeq())  
-                    .updatedId(request.getUserSeq())
+                    .createdId(0) // TODO: 사용자 정보 주입
+                    .updatedId(0) // TODO: 사용자 정보 주입
                     .latestAt(LocalDate.now())
                     .user_status(User.UserStatus.ACTIVE)
                     .build());
@@ -104,7 +93,7 @@ public class UserController {
 
         User admin = User.builder()
                 .adminId(request.getAdminId())
-                .password(passwordEncoder.encode(rawPassword))
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.ADMIN)
                 .build();
 
@@ -132,7 +121,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 틀렸습니다.");
         }
 
-        String token = jwtTokenProvider.AdminCreateToken(user);
+        String token = jwtTokenProvider.adminCreateToken(user);
 
         return ResponseEntity.ok()
                 .header("Authorization", "Bearer " + token)
@@ -166,11 +155,7 @@ public class UserController {
     }
 
     // 로그아웃
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("로그아웃 완료");
-    }
+
 
     // 회원탈퇴
     @PostMapping("/delete")

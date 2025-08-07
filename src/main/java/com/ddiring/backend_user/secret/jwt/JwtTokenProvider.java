@@ -3,43 +3,60 @@ package com.ddiring.backend_user.secret.jwt;
 import com.ddiring.backend_user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import javax.crypto.SecretKey;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final SecretKey key;
 
-    private final long expireIn = 1000 * 60 * 60;
+    private final long expireIn = 1000 * 60 * 60; // 1시간
+
+    private static final String AUTHORITIES_KEY = "role";
+
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String createToken(User user) {
-        Claims claims = Jwts.claims().setSubject(user.getKakaoId()).build();
-        claims.put("role", user.getRole().name());
-        claims.put("nickname", user.getNickname());
-        claims.put("userSeq", user.getUserSeq());
+        Claims claims = Jwts.claims()
+                .add("role", user.getRole().name())
+                .add("nickname", user.getNickname())
+                .add("userSeq", user.getUserSeq())
+                .build();
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expireIn);
 
         return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setHeaderParam("role", role)
+                .header()
+                .add("typ", "JWT")
+                .add("role", user.getRole().name())
+                .and()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes(StandardCharsets.UTF_8))
+                .signWith(key)
                 .compact();
     }
 
-    public String AdminCreateToken(User user) {
-        Claims claims = Jwts.claims().setSubject(user.getKakaoId()).build();
-        claims.put("role", user.getRole().name());
-        claims.put("userSeq", user.getUserSeq());
+    public String adminCreateToken(User user) {
+        Claims claims = Jwts.claims()
+                .subject(user.getAdminId())
+                .add("role", user.getRole().name())
+                .add("userSeq", user.getUserSeq())
+                .build();
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expireIn);
@@ -48,16 +65,16 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes(StandardCharsets.UTF_8))
+                .signWith(key)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -66,27 +83,28 @@ public class JwtTokenProvider {
 
     public String getKakaoId(String token) {
         return Jwts.parser()
-                .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
-        List<? extends SimpleGrantedAuthority> authorities = Arrays
-                .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+        List<SimpleGrantedAuthority> authorities = claims.get(AUTHORITIES_KEY, String.class)
+                .lines()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
-                claims.getSubject(), "", authorities);
+        org.springframework.security.core.userdetails.User principal =
+                new org.springframework.security.core.userdetails.User(
+                        claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
