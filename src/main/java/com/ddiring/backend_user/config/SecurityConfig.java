@@ -35,7 +35,12 @@ public class SecurityConfig {
                     return config;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/auth/login").permitAll()
+                        .requestMatchers(
+//                                "user/auth/signup",
+                                "/user/auth/login"
+//                                "/user/auth/admin/signup",
+//                                "/user/auth/admin/login"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 // JwtAuthenticationFilter 등록
                 .addFilterBefore(
