@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 
 @Slf4j
@@ -32,12 +33,12 @@ public class UserService {
                 .role(request.getRole())
                 .birthDate(request.getBirthDate())
                 .age(age)
-                .createdAt(LocalDate.now())
-                .createdId(0) // TODO: 관리자 ID
-                .updatedAt(LocalDate.now())
-                .updatedId(0) // TODO: 관리자 ID
+                .createdAt(LocalDateTime.now())
+                .createdId(0)
+                .updatedAt(LocalDateTime.now())
+                .updatedId(0)
                 .user_status(User.UserStatus.ACTIVE)
-                .latestAt(LocalDate.now())
+                .latestAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);

@@ -1,9 +1,7 @@
 package com.ddiring.backend_user.dto.request;
 
-import com.ddiring.backend_user.entity.User;
 import lombok.*;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,5 +12,5 @@ public class UserEditRequest {
 
     private Integer userSeq;
     private String nickname;
-    private LocalDate updateAt;
+    private LocalDateTime updateAt;
 }

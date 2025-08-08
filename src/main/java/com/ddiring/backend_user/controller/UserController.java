@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Slf4j
@@ -72,11 +73,11 @@ public class UserController {
                     .role(role)
                     .gender(gender)
                     .birthDate(request.getBirthDate())
-                    .createdAt(LocalDate.now())
-                    .updatedAt(LocalDate.now())
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .createdId(0) // TODO: 사용자 정보 주입
                     .updatedId(0) // TODO: 사용자 정보 주입
-                    .latestAt(LocalDate.now())
+                    .latestAt(LocalDateTime.now())
                     .user_status(User.UserStatus.ACTIVE)
                     .build());
         });

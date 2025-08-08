@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Entity
@@ -57,19 +58,19 @@ public class User {
     private UserStatus user_status;
 
     @Column(name = "latest_at", nullable = false)
-    private LocalDate latestAt;
+    private LocalDateTime latestAt;
 
     @Column(name = "created_id", nullable = false)
     private Integer createdId;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_id", nullable = false)
     private Integer updatedId;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDate updatedAt;
+    private LocalDateTime updatedAt;
 
     public enum Role {
         ADMIN, USER, CREATOR
@@ -85,11 +86,11 @@ public class User {
 
     public void updateUserStatus(UserStatus status) {
         this.user_status = status;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void updateUpdatedInfo(Integer updatedId) {
         this.updatedId = updatedId;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
