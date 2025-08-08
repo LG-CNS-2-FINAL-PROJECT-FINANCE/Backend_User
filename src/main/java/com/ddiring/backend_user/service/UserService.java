@@ -2,10 +2,7 @@ package com.ddiring.backend_user.service;
 
 import com.ddiring.backend_user.dto.request.UserSignUpRequest;
 import com.ddiring.backend_user.entity.User;
-import com.ddiring.backend_user.kakao.KakaoOAuthService;
 import com.ddiring.backend_user.repository.UserRepository;
-import com.ddiring.backend_user.event.producer.KafkaMessageProducer;
-import com.ddiring.backend_user.secret.jwt.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

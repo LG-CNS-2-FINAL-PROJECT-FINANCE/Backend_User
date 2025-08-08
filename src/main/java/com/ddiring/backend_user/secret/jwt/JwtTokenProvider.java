@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import javax.crypto.SecretKey;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -44,9 +45,13 @@ public class JwtTokenProvider {
                 .add("typ", "JWT")
                 .add("role", user.getRole().name())
                 .and()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(expiry)
+                .claims(Map.of(
+                        "role", user.getRole().name(),
+                        "nickname", user.getNickname(),
+                        "userSeq", user.getUserSeq()
+                ))
+                .issuedAt(now)
+                .expiration(expiry)
                 .signWith(key)
                 .compact();
     }
@@ -62,9 +67,13 @@ public class JwtTokenProvider {
         Date expiry = new Date(now.getTime() + expireIn);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(expiry)
+                .claims(Map.of(
+                        Claims.SUBJECT, user.getAdminId(),
+                        "role", user.getRole().name(),
+                        "userSeq", user.getUserSeq()
+                ))
+                .issuedAt(now)
+                .expiration(expiry)
                 .signWith(key)
                 .compact();
     }
@@ -90,22 +99,24 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
-    public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser()
+    public long getRemainingTime(String token) {
+        Date expiration = Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload();
+                .getPayload()
+                .getExpiration();
 
-        List<SimpleGrantedAuthority> authorities = claims.get(AUTHORITIES_KEY, String.class)
-                .lines()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        long now = System.currentTimeMillis();
+        return (expiration.getTime() - now) / 1000;
+    }
 
-        org.springframework.security.core.userdetails.User principal =
-                new org.springframework.security.core.userdetails.User(
-                        claims.getSubject(), "", authorities);
-
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+    public String getRole(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 }

@@ -7,10 +7,12 @@ import com.ddiring.backend_user.dto.request.UserSignUpRequest;
 import com.ddiring.backend_user.dto.response.UserInfoResponse;
 import com.ddiring.backend_user.entity.User;
 import com.ddiring.backend_user.kakao.KakaoOAuthService;
+import com.ddiring.backend_user.redis.RedisService;
 import com.ddiring.backend_user.repository.UserRepository;
 import com.ddiring.backend_user.secret.jwt.JwtTokenProvider;
 import com.ddiring.backend_user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,7 @@ public class UserController {
 
     private final UserService userService;
     private final KakaoOAuthService kakaoOAuthService;
+    private final RedisService redisService;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
@@ -156,7 +159,15 @@ public class UserController {
     }
 
     // 로그아웃
-
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            long remainingTime = jwtTokenProvider.getRemainingTime(token);
+            redisService.saveRemoveToken(token, remainingTime);
+        }
+        return ResponseEntity.ok().build();
+    }
 
     // 회원탈퇴
     @PostMapping("/delete")
