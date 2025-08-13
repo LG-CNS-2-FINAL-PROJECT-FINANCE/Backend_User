@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("*")); // TODO: 프론트 주소 변경
+                    config.setAllowedOrigins(List.of("http://localhost:5173")); // TODO: 프론트 주소 변경
                     config.setAllowedMethods(List.of("GET", "POST"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
