@@ -139,11 +139,16 @@ public class UserController {
             return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 틀렸습니다.");
         }
 
-        String token = jwtTokenProvider.adminCreateToken(user);
+        String accessToken = jwtTokenProvider.adminCreateToken(user);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user);
 
         return ResponseEntity.ok()
-                .header("Authorization", "Bearer " + token)
-                .body("관리자 로그인 성공");
+                .header("Authorization", "Bearer " + accessToken)
+                .body(java.util.Map.of(
+                    "message", "관리자 로그인 성공",
+                    "accessToken", accessToken,
+                    "refreshToken", refreshToken
+                ));
     }
 
     // 개인 정보 조회
