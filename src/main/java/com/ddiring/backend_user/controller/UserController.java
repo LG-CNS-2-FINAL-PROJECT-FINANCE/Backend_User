@@ -5,6 +5,7 @@ import com.ddiring.backend_user.dto.request.UserEditRequest;
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
 import com.ddiring.backend_user.dto.request.UserSignUpRequest;
 import com.ddiring.backend_user.dto.response.UserInfoResponse;
+import com.ddiring.backend_user.dto.response.UserListResponse;
 import com.ddiring.backend_user.entity.User;
 import com.ddiring.backend_user.kakao.KakaoOAuthService;
 import com.ddiring.backend_user.redis.RedisService;
@@ -24,7 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -142,9 +145,31 @@ public class UserController {
         return new UserInfoResponse(
                 user.getEmail(),
                 user.getNickname(),
+                user.getRole(),
+                user.getAge(),
                 user.getGender(),
-                user.getBirthDate()
+                user.getUser_status(),
+                user.getLatestAt()
         );
+    }
+
+    // 모든 사용자 정보 조회
+    @GetMapping
+    public List<UserListResponse> getUserList() {
+        List<User> users = userRepository.findAll();
+
+        return users.stream()
+                .map(user -> new UserListResponse(
+                        user.getUserSeq(),
+                        user.getEmail(),
+                        user.getNickname(),
+                        user.getRole(),
+                        user.getAge(),
+                        user.getGender(),
+                        user.getUser_status(),
+                        user.getLatestAt()
+                ))
+                .collect(Collectors.toList());
     }
 
     // 회원 정보 수정
