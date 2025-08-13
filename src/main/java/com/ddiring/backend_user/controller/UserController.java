@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "api/user/auth", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/user/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class UserController {
 
