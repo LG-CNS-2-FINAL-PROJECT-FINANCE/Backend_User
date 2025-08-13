@@ -36,10 +36,10 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-//                                "user/auth/signup",
-                                "/user/auth/login"
-//                                "/user/auth/admin/signup",
-//                                "/user/auth/admin/login"
+                                "/api/user/auth/signup",
+                                "/api/user/auth/login",
+                                "/api/user/auth/admin/signup",
+                                "/api/user/auth/admin/login"
                         ).permitAll()
                         .anyRequest().authenticated())
                 // JwtAuthenticationFilter 등록
