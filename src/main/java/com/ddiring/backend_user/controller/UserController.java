@@ -95,10 +95,23 @@ public class UserController {
             return ResponseEntity.badRequest().body("이미 존재하는 아이디입니다.");
         }
 
+        // 관리자 회원가입 시 모든 필수 필드 채우기
         User admin = User.builder()
                 .adminId(request.getAdminId())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.ADMIN)
+                .userName("관리자")
+                .email(request.getAdminId() + "@admin.com")
+                .nickname("관리자")
+                .gender(User.Gender.MALE) // 필요시 request에서 받도록 수정
+                .birthDate(LocalDate.now()) // 필요시 request에서 받도록 수정
+                .age(0)
+                .latestAt(LocalDateTime.now())
+                .createdId(0)
+                .createdAt(LocalDateTime.now())
+                .updatedId(0)
+                .updatedAt(LocalDateTime.now())
+                .user_status(User.UserStatus.ACTIVE)
                 .build();
 
         userRepository.save(admin);
