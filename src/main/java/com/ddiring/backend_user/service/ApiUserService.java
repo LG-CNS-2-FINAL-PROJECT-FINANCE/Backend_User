@@ -2,7 +2,6 @@ package com.ddiring.backend_user.service;
 
 import com.ddiring.backend_user.dto.UserDTO;
 import com.ddiring.backend_user.repository.UserRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

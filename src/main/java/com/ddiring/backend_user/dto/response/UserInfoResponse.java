@@ -3,7 +3,6 @@ package com.ddiring.backend_user.dto.response;
 import com.ddiring.backend_user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
