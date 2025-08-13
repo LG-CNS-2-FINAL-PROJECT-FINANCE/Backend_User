@@ -26,7 +26,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/user/auth/admin/login").permitAll()
+                .requestMatchers(
+                        "/api/user/auth/admin/login",
+                        "/api/user/auth/admin/register"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService), UsernamePasswordAuthenticationFilter.class);
