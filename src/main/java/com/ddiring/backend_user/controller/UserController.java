@@ -45,6 +45,9 @@ public class UserController {
         if (request.getRole() == User.Role.ADMIN) {
             return ResponseEntity.badRequest().body("관리자 등록 불가");
         }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return ResponseEntity.badRequest().body("이미 존재하는 이메일입니다.");
+        }
         userService.registerUser(request);
 
         return ResponseEntity.ok("회원 등록이 완료되었습니다.");
@@ -56,15 +59,15 @@ public class UserController {
             @RequestParam("code") String code,
             @RequestBody UserLoginRequest request
             ) {
-        String accessToken = kakaoOAuthService.getAccessToken(code);
-        KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(accessToken);
+        String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
+        KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
 
         User.Role role = request.getRole();
         User.Gender gender = request.getGender();
 
         Optional<User> optionalUser = userRepository.findByKakaoId(userInfo.getKakaoId());
 
-        User user =optionalUser.orElseGet(() -> {
+        User user = optionalUser.orElseGet(() -> {
             return userRepository.save(User.builder()
                     .kakaoId(userInfo.getKakaoId())
                     .email(userInfo.getEmail())
@@ -75,18 +78,23 @@ public class UserController {
                     .birthDate(request.getBirthDate())
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
-                    .createdId(0) // TODO: 사용자 정보 주입
-                    .updatedId(0) // TODO: 사용자 정보 주입
+                    .createdId(request.getUserSeq())
+                    .updatedId(request.getUserSeq())
                     .latestAt(LocalDateTime.now())
                     .user_status(User.UserStatus.ACTIVE)
                     .build());
         });
 
-        String token = jwtTokenProvider.createToken(user);
+        String accessToken = jwtTokenProvider.createToken(user);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user);
 
         return ResponseEntity.ok()
-                .header("Authorization", "Bearer " + token)
-                .body("로그인 성공");
+                .header("Authorization", "Bearer " + accessToken)
+                .body(java.util.Map.of(
+                    "message", "로그인 성공",
+                    "accessToken", accessToken,
+                    "refreshToken", refreshToken
+                ));
     }
 
     // 관리자 회원가입

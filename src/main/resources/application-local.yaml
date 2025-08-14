@@ -34,4 +34,4 @@ jwt:
   expires-in: 86400
   mobile-expires-in: 31536000
   tablet-expires-in: 31536000
-  secret-key: AADfaskllew32dsfasdTG764Gdslkj298GsWg86Gkalsdjfalkdsjfkladsjfklasdjfkwejqtklfksadnfklsadjmfkl
+  secret-key: "u8v9wX2z3A5d6F7g8H9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6A7b8C9d0E1f"

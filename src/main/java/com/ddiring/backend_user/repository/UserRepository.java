@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
-
     Optional<User> findByUserSeq(Integer userSeq);
 
     Optional<User> findByKakaoId(String kakaoId);
@@ -15,6 +14,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByAdminId(String adminId);
 
     boolean existsByAdminId(String adminId);
+
+    boolean existsByEmail(String email);
 
     List<User> findByUserSeqIn(List<Integer> userInfo);
 }
