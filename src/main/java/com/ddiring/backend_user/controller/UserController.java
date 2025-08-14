@@ -20,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -42,12 +41,6 @@ public class UserController {
     // 회원가입
     @PostMapping(value = "/auth/signup")
     public ResponseEntity<String> registerUser(@RequestBody @Valid UserSignUpRequest request) {
-        if (request.getRole() == User.Role.ADMIN) {
-            return ResponseEntity.badRequest().body("관리자 등록 불가");
-        }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body("이미 존재하는 이메일입니다.");
-        }
         userService.registerUser(request);
 
         return ResponseEntity.ok("회원 등록이 완료되었습니다.");
@@ -76,10 +69,7 @@ public class UserController {
                     .role(role)
                     .gender(gender)
                     .birthDate(request.getBirthDate())
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .createdId(request.getUserSeq())
-                    .updatedId(request.getUserSeq())
+                    .age(userService.updateAge(request.getBirthDate()))
                     .latestAt(LocalDateTime.now())
                     .user_status(User.UserStatus.ACTIVE)
                     .build());
@@ -104,17 +94,12 @@ public class UserController {
             return ResponseEntity.badRequest().body("이미 존재하는 아이디입니다.");
         }
 
-        // 관리자 회원가입 시 모든 필수 필드 채우기
         User admin = User.builder()
                 .adminId(request.getAdminId())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.ADMIN)
                 .userName("관리자")
-                .email(request.getAdminId() + "@admin.com")
                 .nickname("관리자")
-                .gender(User.Gender.MALE) // 필요시 request에서 받도록 수정
-                .birthDate(LocalDate.now()) // 필요시 request에서 받도록 수정
-                .age(0)
                 .latestAt(LocalDateTime.now())
                 .createdId(0)
                 .createdAt(LocalDateTime.now())

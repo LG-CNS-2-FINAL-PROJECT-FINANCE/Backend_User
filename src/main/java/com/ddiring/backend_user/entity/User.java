@@ -57,6 +57,9 @@ public class User {
     @Column(name = "user_status")
     private UserStatus user_status;
 
+    @Column(name = "bank_type")
+    private Integer bankType;
+
     @Column(name = "latest_at")
     private LocalDateTime latestAt;
 

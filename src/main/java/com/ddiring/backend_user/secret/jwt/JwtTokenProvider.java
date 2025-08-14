@@ -39,7 +39,6 @@ public class JwtTokenProvider {
                 .add("role", user.getRole().name())
                 .and()
                 .claims(Map.of(
-                        "userId", user.getUserSeq().toString(),
                         "tokenType", "access",
                         "role", user.getRole().name(),
                         "userSeq", user.getUserSeq()
@@ -63,7 +62,6 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .claims(Map.of(
                         Claims.SUBJECT, user.getAdminId(),
-                        "userId", user.getUserSeq().toString(),
                         "tokenType", "access",
                         "role", user.getRole().name(),
                         "userSeq", user.getUserSeq()

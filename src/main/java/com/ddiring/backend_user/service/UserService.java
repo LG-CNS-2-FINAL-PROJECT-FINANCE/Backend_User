@@ -22,20 +22,11 @@ public class UserService {
     // 회원가입
     @Transactional
     public void registerUser(UserSignUpRequest request) {
-
-        Integer age = updateAge(request.getBirthDate());
         User user = User.builder()
-                .userName(request.getUserName())
-                .email(request.getEmail())
-                .nickname(request.getNickname())
-                .gender(request.getGender())
-                .role(request.getRole())
-                .birthDate(request.getBirthDate())
-                .age(age)
                 .createdAt(LocalDateTime.now())
-                .createdId(request.getCreated_id())
+                .createdId(request.getUserSeq())
                 .updatedAt(LocalDateTime.now())
-                .updatedId(request.getUpdated_id())
+                .updatedId(request.getUserSeq())
                 .user_status(User.UserStatus.ACTIVE)
                 .latestAt(LocalDateTime.now())
                 .build();

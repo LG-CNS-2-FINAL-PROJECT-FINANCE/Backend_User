@@ -17,4 +17,5 @@ public class UserLoginRequest {
     private User.Gender gender;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
+    private Integer age;
 }

@@ -14,12 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UserSignUpRequest {
 
-    private String userName;
-    private String nickname;
-    private String email;
-    private LocalDate birthDate;
-    private User.Gender gender;
-    private User.Role role;
+    private Integer userSeq;
     private Integer created_id;
     private Integer updated_id;
 }
