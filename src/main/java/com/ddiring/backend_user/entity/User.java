@@ -18,58 +18,58 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_seq", nullable = false, unique = true)
+    @Column(name = "user_seq", unique = true)
     private Integer userSeq;
 
-    @Column(name = "kakao_id", unique = true)
+    @Column(name = "kakao_id")
     private String kakaoId;
 
-    @Column(name = "admin_id", unique = true)
+    @Column(name = "admin_id")
     private String adminId;
 
-    @Column(name = "user_name", nullable = false)
+    @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")
     private String password;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "nickname")
     private String nickname;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role")
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender", nullable = false)
+    @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @Column(name = "age", nullable = false)
+    @Column(name = "age")
     private Integer age;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status")
     private UserStatus user_status;
 
-    @Column(name = "latest_at", nullable = false)
+    @Column(name = "latest_at")
     private LocalDateTime latestAt;
 
-    @Column(name = "created_id", nullable = false)
+    @Column(name = "created_id")
     private Integer createdId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_id", nullable = false)
+    @Column(name = "updated_id")
     private Integer updatedId;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public enum Role {

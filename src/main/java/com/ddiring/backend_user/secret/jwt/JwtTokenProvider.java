@@ -27,7 +27,6 @@ public class JwtTokenProvider {
     public String createToken(User user) {
         Claims claims = Jwts.claims()
                 .add("role", user.getRole().name())
-                .add("nickname", user.getNickname())
                 .add("userSeq", user.getUserSeq())
                 .build();
 
@@ -40,8 +39,9 @@ public class JwtTokenProvider {
                 .add("role", user.getRole().name())
                 .and()
                 .claims(Map.of(
+                        "userId", user.getUserSeq().toString(),
+                        "tokenType", "access",
                         "role", user.getRole().name(),
-                        "nickname", user.getNickname(),
                         "userSeq", user.getUserSeq()
                 ))
                 .issuedAt(now)
@@ -63,6 +63,8 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .claims(Map.of(
                         Claims.SUBJECT, user.getAdminId(),
+                        "userId", user.getUserSeq().toString(),
+                        "tokenType", "access",
                         "role", user.getRole().name(),
                         "userSeq", user.getUserSeq()
                 ))

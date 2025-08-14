@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/user/auth", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/user", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class UserController {
 
@@ -40,7 +40,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     // 회원가입
-    @PostMapping(value = "/signup")
+    @PostMapping(value = "/auth/signup")
     public ResponseEntity<String> registerUser(@RequestBody @Valid UserSignUpRequest request) {
         if (request.getRole() == User.Role.ADMIN) {
             return ResponseEntity.badRequest().body("관리자 등록 불가");
@@ -54,7 +54,7 @@ public class UserController {
     }
 
     // 회원 로그인
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> kakaoLogin(
             @RequestParam("code") String code,
             @RequestBody UserLoginRequest request
@@ -98,7 +98,7 @@ public class UserController {
     }
 
     // 관리자 회원가입
-    @PostMapping("/admin/signup")
+    @PostMapping("/auth/admin/signup")
     public ResponseEntity<?> registerAdmin(@RequestBody AdminRequest request) {
         if (userRepository.existsByAdminId(request.getAdminId())) {
             return ResponseEntity.badRequest().body("이미 존재하는 아이디입니다.");
@@ -129,7 +129,7 @@ public class UserController {
     }
 
     // 관리자 로그인
-    @PostMapping("/admin/login")
+    @PostMapping("/auth/admin/login")
     public ResponseEntity<?> adminLogin(@RequestBody AdminRequest request) {
         Optional<User> admin = userRepository.findByAdminId(request.getAdminId());
 
@@ -196,7 +196,7 @@ public class UserController {
     }
 
     // 회원 정보 수정
-    @PostMapping("/edit")
+    @PostMapping("/auth/edit")
     public void editUser(@RequestBody UserEditRequest request) {
         User user = userRepository.findByUserSeq(request.getUserSeq())
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
@@ -208,18 +208,31 @@ public class UserController {
     }
 
     // 로그아웃
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            long remainingTime = jwtTokenProvider.getRemainingTime(token);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("Authorization 헤더가 없거나 Bearer 형식이 아닙니다.");
+            return ResponseEntity.badRequest().body(null);
+        }
+        String token = authHeader.substring(7);
+        long remainingTime;
+        try {
+            remainingTime = jwtTokenProvider.getRemainingTime(token);
+        } catch (Exception e) {
+            log.error("JWT 파싱 오류: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(null);
+        }
+        try {
             redisService.saveRemoveToken(token, remainingTime);
+        } catch (Exception e) {
+            log.error("Redis 처리 오류: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
         }
         return ResponseEntity.ok().build();
     }
 
     // 회원탈퇴
-    @PostMapping("/delete")
+    @PostMapping("/auth/delete")
     public ResponseEntity<String> deleteUser(@RequestParam Integer userSeq) {
         userService.deleteUser(userSeq);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");

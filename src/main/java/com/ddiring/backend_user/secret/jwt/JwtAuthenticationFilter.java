@@ -30,22 +30,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        if ("/api/user/auth/logout".equals(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(request);
 
         if (token != null && jwtTokenProvider.validateToken(token) && !redisService.isRemoveToken(token)) {
-
             String role = jwtTokenProvider.getRole(token);
-
             if (User.Role.ADMIN.name().equals(role)) {
-                // 관리자 → 카카오 인증 없이 통과
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 "admin", null,
                                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
             } else {
-                // 일반 사용자 → Kakao ID 인증
                 String kakaoId = jwtTokenProvider.getKakaoId(token);
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(

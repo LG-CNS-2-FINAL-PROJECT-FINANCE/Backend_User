@@ -17,8 +17,9 @@ public class UserSignUpRequest {
     private String userName;
     private String nickname;
     private String email;
-    private String kakaoId;
     private LocalDate birthDate;
     private User.Gender gender;
     private User.Role role;
+    private Integer created_id;
+    private Integer updated_id;
 }
