@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @Entity
-@Table(name = "user")
+@Table(name = "`user`") // Backticked to avoid MariaDB/MySQL reserved word conflict
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class User {
@@ -19,10 +19,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_seq", unique = true)
-    private Integer userSeq;
-
-    @Column(name = "kakao_id")
-    private String kakaoId;
+    private String userSeq;
 
     @Column(name = "admin_id")
     private String adminId;
@@ -30,7 +27,7 @@ public class User {
     @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "password")
@@ -57,9 +54,6 @@ public class User {
     @Column(name = "user_status")
     private UserStatus user_status;
 
-    @Column(name = "bank_type")
-    private Integer bankType;
-
     @Column(name = "latest_at")
     private LocalDateTime latestAt;
 
@@ -74,6 +68,9 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "profile_completed")
+    private Boolean profileCompleted;
 
     public enum Role {
         ADMIN, USER, CREATOR
@@ -94,6 +91,15 @@ public class User {
 
     public void updateUpdatedInfo(Integer updatedId) {
         this.updatedId = updatedId;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void toggleRole() {
+        if (this.role == Role.USER) {
+            this.role = Role.CREATOR;
+        } else if (this.role == Role.CREATOR) {
+            this.role = Role.USER;
+        }
         this.updatedAt = LocalDateTime.now();
     }
 }

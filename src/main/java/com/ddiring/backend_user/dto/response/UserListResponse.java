@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserListResponse {
 
-    private Integer userSeq;
+    private String userSeq;
     private String email;
     private String nickname;
     private User.Role role;

@@ -30,6 +30,7 @@ spring:
     client-id: b4b2d8c256a781c939214bc2360fef37
     redirect-uri: http://localhost:8080/api/user/auth/login
     client-secret: VtEJApm3TPWTu7aDuvlmrwzDg8klmhcw
+    scope: account_email
 
   cloud:
     compatibility-verifier:

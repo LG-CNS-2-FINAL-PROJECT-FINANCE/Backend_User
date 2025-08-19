@@ -14,7 +14,7 @@ public class ApiUserService {
 
     private final UserRepository userRepository;
 
-    public List<UserDTO> getUserInfo(List<Integer> userInfo) {
+    public List<UserDTO> getUserInfo(List<String> userInfo) {
         return userRepository.findByUserSeqIn(userInfo).stream()
                 .map(user -> UserDTO.builder()
                         .userSeq(user.getUserSeq())

@@ -6,10 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByUserSeq(Integer userSeq);
-
-    Optional<User> findByKakaoId(String kakaoId);
+public interface UserRepository extends JpaRepository<User, String> {
+    Optional<User> findByUserSeq(String userSeq);
 
     Optional<User> findByAdminId(String adminId);
 
@@ -17,5 +15,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByEmail(String email);
 
-    List<User> findByUserSeqIn(List<Integer> userInfo);
+    List<User> findByUserSeqIn(List<String> userInfo);
+
+    Optional<User> findByEmail(String email);
 }

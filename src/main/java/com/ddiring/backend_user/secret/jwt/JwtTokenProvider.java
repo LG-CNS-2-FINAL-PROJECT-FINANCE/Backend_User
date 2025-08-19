@@ -14,125 +14,120 @@ import java.util.Map;
 @Component
 public class JwtTokenProvider {
 
-    private final SecretKey key;
-    private final long expireIn = 1000 * 60 * 60; // 1시간
-    private final long refreshExpireIn = 1000L * 60 * 60 * 24 * 7; // 7일
-    private static final String AUTHORITIES_KEY = "role";
+        private final SecretKey key;
+        private final long expireIn = 1000 * 60 * 60; // 1시간
+        private final long refreshExpireIn = 1000L * 60 * 60 * 24 * 7; // 7일
+        private static final String AUTHORITIES_KEY = "role";
 
-    public JwtTokenProvider(@Value("${jwt.secret-key}") String secretKey) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public String createToken(User user) {
-        Claims claims = Jwts.claims()
-                .add("role", user.getRole().name())
-                .add("userSeq", user.getUserSeq())
-                .build();
-
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + expireIn);
-
-        return Jwts.builder()
-                .header()
-                .add("typ", "JWT")
-                .add("role", user.getRole().name())
-                .and()
-                .claims(Map.of(
-                        "tokenType", "access",
-                        "role", user.getRole().name(),
-                        "userSeq", user.getUserSeq()
-                ))
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(key)
-                .compact();
-    }
-
-    public String adminCreateToken(User user) {
-        Claims claims = Jwts.claims()
-                .subject(user.getAdminId())
-                .add("role", user.getRole().name())
-                .add("userSeq", user.getUserSeq())
-                .build();
-
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + expireIn);
-
-        return Jwts.builder()
-                .claims(Map.of(
-                        Claims.SUBJECT, user.getAdminId(),
-                        "tokenType", "access",
-                        "role", user.getRole().name(),
-                        "userSeq", user.getUserSeq()
-                ))
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(key)
-                .compact();
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (Exception e) {
-            return false;
+        public JwtTokenProvider(@Value("${jwt.secret-key}") String secretKey) {
+                byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+                this.key = Keys.hmacShaKeyFor(keyBytes);
         }
-    }
 
-    public String getKakaoId(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-    }
+        public String createToken(User user) {
+                Claims claims = Jwts.claims()
+                                .subject(String.valueOf(user.getUserSeq()))
+                                .add("role", user.getRole().name())
+                                .add("userSeq", user.getUserSeq())
+                                .build();
 
-    public long getRemainingTime(String token) {
-        Date expiration = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration();
+                Date now = new Date();
+                Date expiry = new Date(now.getTime() + expireIn);
 
-        long now = System.currentTimeMillis();
-        return (expiration.getTime() - now) / 1000;
-    }
+                return Jwts.builder()
+                                .claims(Map.of(
+                                                Claims.SUBJECT, String.valueOf(user.getUserSeq()),
+                                                "tokenType", "access",
+                                                "role", user.getRole().name(),
+                                                "userSeq", user.getUserSeq()))
+                                .issuedAt(now)
+                                .expiration(expiry)
+                                .signWith(key)
+                                .compact();
+        }
 
-    public String getRole(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("role", String.class);
-    }
+        public String adminCreateToken(User user) {
+                Claims claims = Jwts.claims()
+                                .subject(user.getAdminId())
+                                .add("role", user.getRole().name())
+                                .add("userSeq", user.getUserSeq())
+                                .build();
 
-    public String createRefreshToken(User user) {
-        Claims claims = Jwts.claims()
-                .subject(user.getAdminId())
-                .add("role", user.getRole().name())
-                .add("userSeq", user.getUserSeq())
-                .build();
+                Date now = new Date();
+                Date expiry = new Date(now.getTime() + expireIn);
 
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + refreshExpireIn);
+                return Jwts.builder()
+                                .claims(Map.of(
+                                                Claims.SUBJECT, user.getAdminId(),
+                                                "tokenType", "access",
+                                                "role", user.getRole().name(),
+                                                "userSeq", user.getUserSeq()))
+                                .issuedAt(now)
+                                .expiration(expiry)
+                                .signWith(key)
+                                .compact();
+        }
 
-        return Jwts.builder()
-                .claims(Map.of(
-                        Claims.SUBJECT, user.getAdminId(),
-                        "role", user.getRole().name(),
-                        "userSeq", user.getUserSeq()
-                ))
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(key)
-                .compact();
-    }
+        public boolean validateToken(String token) {
+                try {
+                        Jwts.parser()
+                                        .verifyWith(key)
+                                        .build()
+                                        .parseSignedClaims(token);
+                        return true;
+                } catch (Exception e) {
+                        return false;
+                }
+        }
+
+        public String getUserSeqFromSubject(String token) {
+                return Jwts.parser()
+                                .verifyWith(key)
+                                .build()
+                                .parseSignedClaims(token)
+                                .getPayload()
+                                .getSubject();
+        }
+
+        public long getRemainingTime(String token) {
+                Date expiration = Jwts.parser()
+                                .verifyWith(key)
+                                .build()
+                                .parseSignedClaims(token)
+                                .getPayload()
+                                .getExpiration();
+
+                long now = System.currentTimeMillis();
+                return (expiration.getTime() - now) / 1000;
+        }
+
+        public String getRole(String token) {
+                return Jwts.parser()
+                                .verifyWith(key)
+                                .build()
+                                .parseSignedClaims(token)
+                                .getPayload()
+                                .get("role", String.class);
+        }
+
+        public String createRefreshToken(User user) {
+                Claims claims = Jwts.claims()
+                                .subject(String.valueOf(user.getUserSeq()))
+                                .add("role", user.getRole().name())
+                                .add("userSeq", user.getUserSeq())
+                                .build();
+
+                Date now = new Date();
+                Date expiry = new Date(now.getTime() + refreshExpireIn);
+
+                return Jwts.builder()
+                                .claims(Map.of(
+                                                Claims.SUBJECT, String.valueOf(user.getUserSeq()),
+                                                "role", user.getRole().name(),
+                                                "userSeq", user.getUserSeq()))
+                                .issuedAt(now)
+                                .expiration(expiry)
+                                .signWith(key)
+                                .compact();
+        }
 }

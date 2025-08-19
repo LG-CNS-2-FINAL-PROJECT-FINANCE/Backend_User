@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Setter
 public class UserLoginRequest {
 
-    private Integer userSeq;
+    private String userSeq;
     private String userName;
     private String nickname;
     private User.Role role;
