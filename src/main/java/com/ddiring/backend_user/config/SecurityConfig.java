@@ -30,9 +30,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
-                "/api/user/auth/oauth/signup",
-                "/api/user/auth/signup",
+                "/api/user/auth/register",
                 "/api/user/auth/login",
+                "/api/user/auth/kakao/callback",
                 "/api/user/auth/admin/login",
                 "/api/user/auth/admin/signup"
             ).permitAll()
