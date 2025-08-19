@@ -73,7 +73,7 @@ public class User {
     private Boolean profileCompleted;
 
     public enum Role {
-        ADMIN, USER, CREATOR
+        ADMIN, USER, CREATOR, GUEST
     }
 
     public enum Gender {
