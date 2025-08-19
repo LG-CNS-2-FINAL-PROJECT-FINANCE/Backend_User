@@ -34,7 +34,8 @@ public class SecurityConfig {
                 "/api/user/auth/login",
                 "/api/user/auth/kakao/callback",
                 "/api/user/auth/admin/login",
-                "/api/user/auth/admin/signup"
+                "/api/user/auth/admin/signup",
+                "api/user/auth/logout"
             ).permitAll()
             .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/user/*").authenticated()
