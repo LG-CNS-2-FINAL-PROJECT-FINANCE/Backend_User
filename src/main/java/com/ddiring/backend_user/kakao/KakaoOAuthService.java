@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import java.util.Map;
+import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -35,14 +36,18 @@ public class KakaoOAuthService {
     @Value("${spring.kakao.client-secret}")
     private String clientSecret;
 
+    @PostConstruct
+    void logConfiguredRedirectUri() {
+        log.info("[KakaoOAuth] configured redirectUri={}", redirectUri);
+    }
+
     public String getAccessToken(String code) {
         RestTemplate restTemplate = new RestTemplate();
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
-    // use configured redirectUri only
-    params.add("redirect_uri", redirectUri);
+        params.add("redirect_uri", redirectUri);
         params.add("code", code);
         params.add("client_secret", clientSecret);
 
@@ -52,11 +57,13 @@ public class KakaoOAuthService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
+            log.info("[KakaoOAuth] exchanging code with redirectUri={}", redirectUri);
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     KAKAO_TOKEN_URL,
                     HttpMethod.POST,
                     request,
-                    new ParameterizedTypeReference<>() {});
+                    new ParameterizedTypeReference<>() {
+                    });
             Map<String, Object> body = response.getBody();
             if (body == null || body.get("access_token") == null) {
                 throw new BadParameter("카카오 토큰 응답에 access_token이 없습니다.");
@@ -77,7 +84,6 @@ public class KakaoOAuthService {
                             desc != null ? desc : "");
                 }
             } catch (Exception ignore) {
-                // ignore JSON parse errors
             }
             throw new BadParameter("카카오 토큰 발급 실패: " + reason);
         } catch (RestClientException e) {
@@ -100,8 +106,8 @@ public class KakaoOAuthService {
                     KAKAO_USER_INFO_URL,
                     HttpMethod.GET,
                     request,
-                    new ParameterizedTypeReference<>() {}
-            );
+                    new ParameterizedTypeReference<>() {
+                    });
 
             Map<String, Object> body = response.getBody();
             if (body == null) {
@@ -134,7 +140,6 @@ public class KakaoOAuthService {
                             desc != null ? desc : "");
                 }
             } catch (Exception ignore) {
-                // ignore JSON parse errors
             }
             throw new BadParameter("카카오 사용자 정보 조회 실패: " + reason);
         } catch (RestClientException e) {
@@ -146,6 +151,6 @@ public class KakaoOAuthService {
     @Getter
     @AllArgsConstructor
     public static class KakaoUserInfo {
-    private String email;
+        private String email;
     }
 }

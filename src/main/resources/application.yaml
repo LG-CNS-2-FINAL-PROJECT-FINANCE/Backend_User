@@ -1,5 +1,3 @@
 spring:
   application:
     name: backend_user
-  profiles:
-    active: local
