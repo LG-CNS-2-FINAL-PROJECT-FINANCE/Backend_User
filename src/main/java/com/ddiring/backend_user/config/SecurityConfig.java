@@ -28,18 +28,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/api/user/auth/register",
-                "/api/user/auth/login",
-                "/api/user/auth/kakao/callback",
-                "/api/user/auth/admin/login",
-                "/api/user/auth/admin/signup",
-                "api/user/auth/logout"
-            ).permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.GET, "/api/user/*").authenticated()
-            .anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/user/auth/register",
+                                "/api/user/auth/login",
+                                "/api/user/auth/kakao/callback",
+                                "/api/user/auth/admin/login",
+                                "/api/user/auth/admin/signup",
+                                "api/user/auth/logout")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/user/auth").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
                         UsernamePasswordAuthenticationFilter.class);
         return http.build();

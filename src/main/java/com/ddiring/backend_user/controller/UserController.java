@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.parameters.P;
 import java.util.List;
@@ -57,14 +58,15 @@ public class UserController {
     }
 
     // 개인 정보 조회
-    @GetMapping("/{userSeq}")
-    @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
-    public UserInfoResponse getUserInfo(@P("userSeq") @PathVariable String userSeq) {
+    @GetMapping
+    @PreAuthorize("hasRole('USER')")
+    public UserInfoResponse getMyInfo(Authentication authentication) {
+        String userSeq = (String) authentication.getPrincipal();
         return userService.getUserInfo(userSeq);
     }
 
-    // 모든 사용자 정보 조회
-    @GetMapping
+    // 모든 사용자 정보 조회 (관리자 전용)
+    @GetMapping("/auth")
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserListResponse> getUserList() {
         return userService.getUserList();
@@ -98,4 +100,44 @@ public class UserController {
     public ResponseEntity<String> toggleUserRole(@RequestParam String userSeq) {
         return userService.toggleUserRoleWithResponse(userSeq);
     }
+
+    // 사용자 상태 변경(활성화)
+    @PostMapping("/auth/active")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> changeStatusActive(
+            @RequestParam String userSeq,
+            @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
+        com.ddiring.backend_user.entity.User.UserStatus desired = com.ddiring.backend_user.entity.User.UserStatus.ACTIVE;
+        if (status != null && status != desired) {
+            return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (ACTIVE)");
+        }
+        return userService.updateUserStatusWithResponse(userSeq, desired);
+    }
+
+    // 사용자 상태 변경(비활성화)
+    @PostMapping("/auth/disabled")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> changeStatusDisabled(
+            @RequestParam String userSeq,
+            @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
+        com.ddiring.backend_user.entity.User.UserStatus desired = com.ddiring.backend_user.entity.User.UserStatus.DISABLED;
+        if (status != null && status != desired) {
+            return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (DISABLED)");
+        }
+        return userService.updateUserStatusWithResponse(userSeq, desired);
+    }
+
+    // 사용자 상태 변경(정지/삭제)
+    @PostMapping("/auth/deleted")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> changeStatusDeleted(
+            @RequestParam String userSeq,
+            @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
+        com.ddiring.backend_user.entity.User.UserStatus desired = com.ddiring.backend_user.entity.User.UserStatus.DELETED;
+        if (status != null && status != desired) {
+            return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (DELETED)");
+        }
+        return userService.updateUserStatusWithResponse(userSeq, desired);
+    }
+
 }

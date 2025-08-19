@@ -97,14 +97,15 @@ public class UserService {
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
 
-//        if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
-//            return ResponseEntity.status(400).body(
-//                    java.util.Map.of(
-//                            "message", "카카오 계정에 이메일 정보가 없습니다. 카카오에서 이메일 제공에 동의했는지, 계정에 이메일이 등록되어 있는지 확인하세요.",
-//                            "code", "NoEmail",
-//                            "data", null));
-//        }
-//
+        // if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
+        // return ResponseEntity.status(400).body(
+        // java.util.Map.of(
+        // "message", "카카오 계정에 이메일 정보가 없습니다. 카카오에서 이메일 제공에 동의했는지, 계정에 이메일이 등록되어 있는지
+        // 확인하세요.",
+        // "code", "NoEmail",
+        // "data", null));
+        // }
+        //
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
         User user = tx.execute(status -> {
             User u = userRepository.findByEmail(userInfo.getEmail()).orElse(null);
@@ -152,14 +153,15 @@ public class UserService {
             }
             return u;
         });
-//
-//        if (user == null || user.getProfileCompleted() == null || !user.getProfileCompleted()) {
-//            return ResponseEntity.status(200).body(
-//                    java.util.Map.of(
-//                            "message", "추가 회원 정보가 필요합니다.",
-//                            "code", "AdditionalInfoRequired",
-//                            "email", user != null ? user.getEmail() : userInfo.getEmail()));
-//        }
+        //
+        // if (user == null || user.getProfileCompleted() == null ||
+        // !user.getProfileCompleted()) {
+        // return ResponseEntity.status(200).body(
+        // java.util.Map.of(
+        // "message", "추가 회원 정보가 필요합니다.",
+        // "code", "AdditionalInfoRequired",
+        // "email", user != null ? user.getEmail() : userInfo.getEmail()));
+        // }
         String accessToken = jwtTokenProvider.createToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
         return ResponseEntity.ok()
@@ -382,6 +384,23 @@ public class UserService {
     public ResponseEntity<String> toggleUserRoleWithResponse(String userSeq) {
         User user = toggleUserRole(userSeq);
         return ResponseEntity.ok("역할이 변경되었습니다. 현재 역할: " + user.getRole());
+    }
+
+    // 사용자 상태 변경
+    @Transactional
+    public User updateUserStatus(String userSeq, User.UserStatus status) {
+        User user = getUserOrThrow(userSeq);
+        user.updateUserStatus(status);
+        user.updateUpdatedInfo(0);
+        userRepository.save(user);
+        return user;
+    }
+
+    // 사용자 상태 변경 응답용
+    @Transactional
+    public ResponseEntity<String> updateUserStatusWithResponse(String userSeq, User.UserStatus status) {
+        User user = updateUserStatus(userSeq, status);
+        return ResponseEntity.ok("사용자 상태가 변경되었습니다. 현재 상태: " + user.getUser_status());
     }
 
     // 공통: 사용자 조회
