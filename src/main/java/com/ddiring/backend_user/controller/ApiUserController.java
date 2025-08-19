@@ -19,7 +19,7 @@ public class ApiUserController {
     private final ApiUserService apiUserService;
 
     @PostMapping("/detail")
-    public List<UserDTO> getUserInfo(@RequestBody List<Integer> userInfo) {
+    public List<UserDTO> getUserInfo(@RequestBody List<String> userInfo) {
         return apiUserService.getUserInfo(userInfo);
     }
 }
