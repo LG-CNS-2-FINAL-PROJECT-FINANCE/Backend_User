@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @Entity
-@Table(name = "`user`") // Backticked to avoid MariaDB/MySQL reserved word conflict
+@Table(name = "`user`")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_seq", unique = true)
     private String userSeq;
 
