@@ -28,22 +28,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/user/auth/oauth/signup",
-                                "/api/user/auth/signup",
-                                "/api/user/auth/login",
-                                "/api/user/auth/admin/login",
-                                "/api/user/auth/admin/signup",
-                                "/api/user/auth/logout",
-                                "/api/user/auth/edit",
-                                "/api/user/auth/delete",
-                                "/api/user/auth/role-toggle")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/").hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/api/user/*").authenticated()
-                        .anyRequest().authenticated())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                "/api/user/auth/oauth/signup",
+                "/api/user/auth/signup",
+                "/api/user/auth/login",
+                "/api/user/auth/admin/login",
+                "/api/user/auth/admin/signup"
+            ).permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/api/user/*").authenticated()
+            .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
                         UsernamePasswordAuthenticationFilter.class);
         return http.build();

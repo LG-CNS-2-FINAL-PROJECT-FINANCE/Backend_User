@@ -28,7 +28,7 @@ spring:
 
   kakao:
     client-id: b4b2d8c256a781c939214bc2360fef37
-    redirect-uri: http://192.168.0.222:8080/api/user/auth/login
+    redirect-uri: http://localhost:3000/login/kakaoConfirm
     client-secret: VtEJApm3TPWTu7aDuvlmrwzDg8klmhcw
     scope: account_email
 

@@ -61,9 +61,8 @@ public class UserService {
         user.setAge(calculateAge(request.getBirthDate()));
         user.setUser_status(User.UserStatus.ACTIVE);
         user.setProfileCompleted(true);
-    // createdId/updatedId는 Integer 필드이므로, 현재 로그인 주체 정보로 채울 수 없다면 0으로 기록
-    user.setCreatedId(user.getCreatedId() == null ? 0 : user.getCreatedId());
-    user.setUpdatedId(user.getUpdatedId() == null ? 0 : user.getUpdatedId());
+        user.setCreatedId(user.getCreatedId() == null ? 0 : user.getCreatedId());
+        user.setUpdatedId(user.getUpdatedId() == null ? 0 : user.getUpdatedId());
         userRepository.save(user);
     }
 
