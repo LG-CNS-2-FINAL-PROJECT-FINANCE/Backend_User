@@ -25,7 +25,11 @@ public class UserController {
 
     private final UserService userService;
 
-    // 회원 정보 등록
+    @GetMapping("/auth/kakao/callback")
+    public ResponseEntity<?> kakaoLoginGet(@RequestParam("code") String code) {
+        return userService.kakaoLoginWithRedirect(code, null);
+    }
+
     // 회원 로그인
     @PostMapping("/auth/login")
     public ResponseEntity<?> kakaoLoginPost(
@@ -34,15 +38,11 @@ public class UserController {
         return userService.kakaoLogin(code, request);
     }
 
-    @PostMapping("/auth/signup")
+    // 회원 정보 등록
+    @PostMapping("/auth/register")
     public ResponseEntity<String> additionalSignup(@RequestBody UserAdditionalInfoRequest request) {
         userService.signUpUser(request);
         return ResponseEntity.ok("회원님의 추가 정보가 등록되었습니다.");
-    }
-
-    @GetMapping("/auth/kakao/callback")
-    public ResponseEntity<?> kakaoLoginGet(@RequestParam("code") String code) {
-        return userService.kakaoLoginWithRedirect(code, null);
     }
 
     // 관리자 회원가입
