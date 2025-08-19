@@ -35,7 +35,7 @@ public class UserController {
     @PostMapping("/auth/signup")
     public ResponseEntity<String> additionalSignup(@RequestBody UserAdditionalInfoRequest request) {
         userService.signUpUser(request);
-        return ResponseEntity.ok("회원가입이 완료되었습니다. 로그인 해주세요.");
+        return ResponseEntity.ok("추가 정보가 등록되었습니다.");
     }
 
     // 회원 로그인
