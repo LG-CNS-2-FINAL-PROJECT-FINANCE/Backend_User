@@ -25,14 +25,14 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/auth/kakao/callback")
-    public ResponseEntity<?> kakaoLoginGet(@RequestParam("code") String code) {
+    public ResponseEntity<?> kakaoLoginGet(@RequestBody String code) {
         return userService.kakaoLoginWithRedirect(code, null);
     }
 
     // 회원 로그인
     @PostMapping("/auth/login")
     public ResponseEntity<?> kakaoLoginPost(
-            @RequestParam("code") String code,
+            @RequestBody String code,
             @RequestBody(required = false) UserLoginRequest request) {
         return userService.kakaoLogin(code, request);
     }
