@@ -2,6 +2,7 @@ package com.ddiring.backend_user.service;
 
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
 import com.ddiring.backend_user.dto.request.UserSignUpRequest;
+import com.ddiring.backend_user.common.exception.NotFound;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -52,7 +54,7 @@ public class UserService {
     @Transactional
     public void signUpUser(UserAdditionalInfoRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new com.ddiring.backend_user.common.exception.NotFound("이메일로 가입된 회원이 없습니다."));
+                .orElseThrow(() -> new NotFound("이메일로 가입된 회원이 없습니다."));
         user.setUserName(request.getUserName());
         user.setNickname(request.getNickname());
         user.setRole(request.getRole());
@@ -64,14 +66,6 @@ public class UserService {
         user.setCreatedId(user.getCreatedId() == null ? 0 : user.getCreatedId());
         user.setUpdatedId(user.getUpdatedId() == null ? 0 : user.getUpdatedId());
         userRepository.save(user);
-    }
-
-    // 회원탈퇴
-    @Transactional
-    public void deleteUser(String userSeq) {
-        User user = getUserOrThrow(userSeq);
-        user.updateUserStatus(User.UserStatus.DELETED);
-        user.updateUpdatedInfo(0);
     }
 
     // 나이 계산
@@ -107,10 +101,12 @@ public class UserService {
         // }
         //
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        AtomicBoolean firstLogin = new AtomicBoolean(false);
         User user = tx.execute(status -> {
             User u = userRepository.findByEmail(userInfo.getEmail()).orElse(null);
             boolean hasAdditional = hasAdditionalInfo(request);
             if (u == null) {
+                firstLogin.set(true);
                 LocalDate birthDate = (hasAdditional) ? request.getBirthDate() : null;
                 Integer age = (birthDate != null) ? calculateAge(birthDate) : null;
                 u = User.builder()
@@ -153,15 +149,14 @@ public class UserService {
             }
             return u;
         });
-        //
-        // if (user == null || user.getProfileCompleted() == null ||
-        // !user.getProfileCompleted()) {
-        // return ResponseEntity.status(200).body(
-        // java.util.Map.of(
-        // "message", "추가 회원 정보가 필요합니다.",
-        // "code", "AdditionalInfoRequired",
-        // "email", user != null ? user.getEmail() : userInfo.getEmail()));
-        // }
+        if (user == null || user.getProfileCompleted() == null || !user.getProfileCompleted()) {
+            return ResponseEntity.status(200).body(
+                    java.util.Map.of(
+                            "message", "추가 회원 정보가 필요합니다.",
+                            "code", "AdditionalInfoRequired",
+                            "email", user != null ? user.getEmail() : userInfo.getEmail(),
+                            "firstLogin", firstLogin.get()));
+        }
         String accessToken = jwtTokenProvider.createToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
         return ResponseEntity.ok()
@@ -169,7 +164,8 @@ public class UserService {
                 .body(java.util.Map.of(
                         "message", "로그인 성공",
                         "accessToken", accessToken,
-                        "refreshToken", refreshToken));
+                        "refreshToken", refreshToken,
+                        "firstLogin", firstLogin.get()));
     }
 
     public ResponseEntity<?> kakaoLoginWithRedirect(String code, UserLoginRequest request) {
@@ -185,10 +181,12 @@ public class UserService {
         }
 
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        AtomicBoolean firstLogin = new AtomicBoolean(false);
         User user = tx.execute(status -> {
             User u = userRepository.findByEmail(userInfo.getEmail()).orElse(null);
             boolean hasAdditional = hasAdditionalInfo(request);
             if (u == null) {
+                firstLogin.set(true);
                 LocalDate birthDate = (hasAdditional) ? request.getBirthDate() : null;
                 Integer age = (birthDate != null) ? calculateAge(birthDate) : null;
                 u = User.builder()
@@ -237,7 +235,8 @@ public class UserService {
                     java.util.Map.of(
                             "message", "추가 회원 정보가 필요합니다.",
                             "code", "AdditionalInfoRequired",
-                            "email", user != null ? user.getEmail() : userInfo.getEmail()));
+                            "email", user != null ? user.getEmail() : userInfo.getEmail(),
+                            "firstLogin", firstLogin.get()));
         }
 
         String accessToken = jwtTokenProvider.createToken(user);
@@ -247,7 +246,8 @@ public class UserService {
                 .body(java.util.Map.of(
                         "message", "로그인 성공",
                         "accessToken", accessToken,
-                        "refreshToken", refreshToken));
+                        "refreshToken", refreshToken,
+                        "firstLogin", firstLogin.get()));
     }
 
     // 관리자 회원가입
@@ -373,6 +373,14 @@ public class UserService {
     }
 
     // 회원탈퇴
+    @Transactional
+    public void deleteUser(String userSeq) {
+        User user = getUserOrThrow(userSeq);
+        user.updateUserStatus(User.UserStatus.DELETED);
+        user.updateUpdatedInfo(0);
+    }
+
+    // 회원탈퇴 응답용
     @Transactional
     public ResponseEntity<String> deleteUserWithResponse(String userSeq) {
         deleteUser(userSeq);

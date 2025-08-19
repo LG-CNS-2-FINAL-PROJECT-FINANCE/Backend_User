@@ -15,7 +15,7 @@ import java.util.Map;
 public class JwtTokenProvider {
 
         private final SecretKey key;
-        private final long expireIn = 1000 * 60 * 60; // 1시간
+        private final long expireIn = 1000L * 60 * 60 * 24; // 1일
         private final long refreshExpireIn = 1000L * 60 * 60 * 24 * 7; // 7일
         private static final String AUTHORITIES_KEY = "role";
 
