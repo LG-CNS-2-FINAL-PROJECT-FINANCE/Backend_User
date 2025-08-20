@@ -6,6 +6,7 @@ import com.ddiring.backend_user.dto.request.UserLoginRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
 import com.ddiring.backend_user.dto.response.UserInfoResponse;
 import com.ddiring.backend_user.dto.response.UserListResponse;
+import com.ddiring.backend_user.entity.User.UserStatus;
 import com.ddiring.backend_user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
-    @GetMapping("/auth/kakao/callback")
-    public ResponseEntity<?> kakaoLoginGet(@RequestParam("code") String code) {
-        return userService.kakaoLoginWithRedirect(code, null);
-    }
 
     // 회원 로그인
     @PostMapping("/auth/login")
@@ -116,7 +112,7 @@ public class UserController {
     public ResponseEntity<String> changeStatusActive(
             @RequestParam String userSeq,
             @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
-        com.ddiring.backend_user.entity.User.UserStatus desired = com.ddiring.backend_user.entity.User.UserStatus.ACTIVE;
+        UserStatus desired = UserStatus.ACTIVE;
         if (status != null && status != desired) {
             return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (ACTIVE)");
         }
@@ -129,7 +125,7 @@ public class UserController {
     public ResponseEntity<String> changeStatusDisabled(
             @RequestParam String userSeq,
             @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
-        com.ddiring.backend_user.entity.User.UserStatus desired = com.ddiring.backend_user.entity.User.UserStatus.DISABLED;
+        UserStatus desired = UserStatus.DISABLED;
         if (status != null && status != desired) {
             return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (DISABLED)");
         }
@@ -142,7 +138,7 @@ public class UserController {
     public ResponseEntity<String> changeStatusDeleted(
             @RequestParam String userSeq,
             @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
-        com.ddiring.backend_user.entity.User.UserStatus desired = com.ddiring.backend_user.entity.User.UserStatus.DELETED;
+        UserStatus desired = UserStatus.DELETED;
         if (status != null && status != desired) {
             return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (DELETED)");
         }

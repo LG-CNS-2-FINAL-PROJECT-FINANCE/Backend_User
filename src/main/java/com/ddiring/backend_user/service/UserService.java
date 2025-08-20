@@ -58,7 +58,6 @@ public class UserService {
                 .orElseThrow(() -> new NotFound("이메일로 가입된 회원이 없습니다."));
         user.setUserName(request.getUserName());
         user.setNickname(request.getNickname());
-        user.setRole(request.getRole());
         user.setGender(request.getGender());
         user.setBirthDate(request.getBirthDate());
         user.setAge(calculateAge(request.getBirthDate()));
@@ -139,13 +138,14 @@ public class UserService {
             }
             return u;
         });
-        // if (user == null || user.getProfileCompleted() == null || !user.getProfileCompleted()) {
-        //     return ResponseEntity.status(200).body(
-        //             java.util.Map.of(
-        //                     "message", "추가 회원 정보가 필요합니다.",
-        //                     "code", "AdditionalInfoRequired",
-        //                     "email", user != null ? user.getEmail() : userInfo.getEmail(),
-        //                     "firstLogin", firstLogin.get()));
+        // if (user == null || user.getProfileCompleted() == null ||
+        // !user.getProfileCompleted()) {
+        // return ResponseEntity.status(200).body(
+        // java.util.Map.of(
+        // "message", "추가 회원 정보가 필요합니다.",
+        // "code", "AdditionalInfoRequired",
+        // "email", user != null ? user.getEmail() : userInfo.getEmail(),
+        // "firstLogin", firstLogin.get()));
         // }
         String accessToken = jwtTokenProvider.createToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
@@ -154,90 +154,9 @@ public class UserService {
                 .body(java.util.Map.of(
                         "message", "로그인 성공",
                         "accessToken", accessToken,
-                        "refreshToken", refreshToken,
-                        "firstLogin", firstLogin.get()));
-    }
-
-    public ResponseEntity<?> kakaoLoginWithRedirect(String code, UserLoginRequest request) {
-        String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
-        KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
-
-        if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
-            return ResponseEntity.status(400).body(
-                    java.util.Map.of(
-                            "message", "카카오 계정에 이메일 정보가 없습니다. 카카오에서 이메일 제공에 동의했는지, 계정에 이메일이 등록되어 있는지 확인하세요.",
-                            "code", "NoEmail",
-                            "data", null));
-        }
-
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        AtomicBoolean firstLogin = new AtomicBoolean(false);
-        User user = tx.execute(status -> {
-            User u = userRepository.findByEmail(userInfo.getEmail()).orElse(null);
-            boolean hasAdditional = hasAdditionalInfo(request);
-            if (u == null) {
-                firstLogin.set(true);
-                LocalDate birthDate = (hasAdditional) ? request.getBirthDate() : null;
-                Integer age = (birthDate != null) ? calculateAge(birthDate) : null;
-                u = User.builder()
-                        .email(userInfo.getEmail())
-                        .userName(hasAdditional ? request.getUserName() : null)
-                        .nickname(hasAdditional ? request.getNickname() : null)
-                        .role(hasAdditional && request.getRole() != null ? request.getRole() : User.Role.USER)
-                        .gender(hasAdditional ? request.getGender() : null)
-                        .birthDate(birthDate)
-                        .age(age)
-                        .latestAt(LocalDateTime.now())
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .user_status(User.UserStatus.ACTIVE)
-                        .profileCompleted(hasAdditional)
-                        .build();
-                u = userRepository.save(u);
-            } else {
-                if (Boolean.FALSE.equals(u.getProfileCompleted()) && hasAdditional) {
-                    LocalDate birthDate = request.getBirthDate();
-                    Integer age = (birthDate != null) ? calculateAge(birthDate) : null;
-                    u.setUserName(request.getUserName());
-                    u.setNickname(request.getNickname());
-                    u.setRole(request.getRole() != null ? request.getRole() : User.Role.USER);
-                    u.setGender(request.getGender());
-                    u.setBirthDate(birthDate);
-                    u.setAge(age);
-                    u.setProfileCompleted(true);
-                }
-                if (u.getProfileCompleted() == null) {
-                    boolean completed = u.getUserName() != null
-                            && u.getNickname() != null
-                            && u.getGender() != null
-                            && u.getBirthDate() != null;
-                    u.setProfileCompleted(completed);
-                }
-                u.setLatestAt(LocalDateTime.now());
-                u.setUpdatedAt(LocalDateTime.now());
-                userRepository.save(u);
-            }
-            return u;
-        });
-
-        if (user == null || user.getProfileCompleted() == null || !user.getProfileCompleted()) {
-            return ResponseEntity.status(200).body(
-                    java.util.Map.of(
-                            "message", "추가 회원 정보가 필요합니다.",
-                            "code", "AdditionalInfoRequired",
-                            "email", user != null ? user.getEmail() : userInfo.getEmail(),
-                            "firstLogin", firstLogin.get()));
-        }
-
-        String accessToken = jwtTokenProvider.createToken(user);
-        String refreshToken = jwtTokenProvider.createRefreshToken(user);
-        return ResponseEntity.ok()
-                .header("Authorization", "Bearer " + accessToken)
-                .body(java.util.Map.of(
-                        "message", "로그인 성공",
-                        "accessToken", accessToken,
-                        "refreshToken", refreshToken,
-                        "firstLogin", firstLogin.get()));
+                        "refreshToken", refreshToken
+                // "firstLogin", firstLogin.get()
+                ));
     }
 
     // 관리자 회원가입
