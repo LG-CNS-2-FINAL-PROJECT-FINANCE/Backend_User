@@ -37,8 +37,11 @@ public class UserController {
 
     // 회원 정보 등록
     @PostMapping("/auth/register")
-    public ResponseEntity<String> additionalSignup(@RequestBody UserAdditionalInfoRequest request) {
-        userService.signUpUser(request);
+    @PreAuthorize("hasAnyRole('USER','CREATOR')")
+    public ResponseEntity<String> additionalSignup(Authentication authentication,
+            @RequestBody UserAdditionalInfoRequest request) {
+        String userSeq = (String) authentication.getPrincipal();
+        userService.signUpUser(userSeq, request);
         return ResponseEntity.ok("회원님의 추가 정보가 등록되었습니다.");
     }
 
@@ -56,7 +59,7 @@ public class UserController {
 
     // 개인 정보 조회
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','CREATOR')")
     public UserInfoResponse getMyInfo(Authentication authentication) {
         String userSeq = (String) authentication.getPrincipal();
         return userService.getUserInfo(userSeq);
@@ -93,7 +96,7 @@ public class UserController {
 
     // 역할 지정
     @PostMapping("/auth/role")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> selectRole(
             Authentication authentication,
             @RequestParam(name = "role") Role role) {
@@ -101,9 +104,9 @@ public class UserController {
         return userService.selectRole(userSeq, role);
     }
 
-    // 역할 변경
+    // 역할 변경 (USER <-> CREATOR)
     @PostMapping("/auth/role-toggle")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','CREATOR')")
     public ResponseEntity<String> toggleRole(Authentication authentication) {
         String userSeq = (String) authentication.getPrincipal();
         return userService.toggleRoleWithResponse(userSeq);

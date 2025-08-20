@@ -66,7 +66,6 @@ public class UserService {
                         .email(userInfo.getEmail())
                         .userName(hasAdditional ? request.getUserName() : null)
                         .nickname(hasAdditional ? request.getNickname() : null)
-                        .role(hasAdditional && request.getRole() != null ? request.getRole() : User.Role.USER)
                         .gender(hasAdditional ? request.getGender() : null)
                         .birthDate(birthDate)
                         .age(age)
@@ -83,7 +82,9 @@ public class UserService {
                     Integer age = (birthDate != null) ? calculateAge(birthDate) : null;
                     u.setUserName(request.getUserName());
                     u.setNickname(request.getNickname());
-                    u.setRole(request.getRole() != null ? request.getRole() : User.Role.USER);
+                    if (request.getRole() != null) {
+                        u.setRole(request.getRole());
+                    }
                     u.setGender(request.getGender());
                     u.setBirthDate(birthDate);
                     u.setAge(age);
@@ -125,8 +126,8 @@ public class UserService {
 
     // 회원 정보 등록
     @Transactional
-    public void signUpUser(UserAdditionalInfoRequest request) {
-        User user = new User();
+    public void signUpUser(String userSeq, UserAdditionalInfoRequest request) {
+        User user = getUserOrThrow(userSeq);
         user.setUserName(request.getUserName());
         user.setNickname(request.getNickname());
         user.setGender(request.getGender());

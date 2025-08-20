@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Setter
 public class UserLoginRequest {
 
+    private String email;
     private String userSeq;
     private String userName;
     private String nickname;
