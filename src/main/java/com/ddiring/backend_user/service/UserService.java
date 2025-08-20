@@ -84,9 +84,6 @@ public class UserService {
                     Integer age = (birthDate != null) ? calculateAge(birthDate) : null;
                     u.setUserName(request.getUserName());
                     u.setNickname(request.getNickname());
-                    if (request.getRole() != null) {
-                        u.setRole(request.getRole());
-                    }
                     u.setGender(request.getGender());
                     u.setBirthDate(birthDate);
                     u.setAge(age);
