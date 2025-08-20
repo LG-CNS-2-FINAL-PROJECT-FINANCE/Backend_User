@@ -94,9 +94,18 @@ public class UserController {
         return userService.deleteUserWithResponse(userSeq);
     }
 
+    // 역할 선택
+    @PostMapping("/auth/role")
+    @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
+    public ResponseEntity<String> selectRole(
+            @RequestParam String userSeq,
+            @RequestParam(name = "role") com.ddiring.backend_user.entity.User.Role role) {
+        return userService.selectRole(userSeq, role);
+    }
+
     // 역할 토글
     @PostMapping("/auth/role-toggle")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
     public ResponseEntity<String> toggleUserRole(@RequestParam String userSeq) {
         return userService.toggleUserRoleWithResponse(userSeq);
     }

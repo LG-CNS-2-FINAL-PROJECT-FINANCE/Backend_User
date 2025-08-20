@@ -3,6 +3,7 @@ package com.ddiring.backend_user.service;
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
 import com.ddiring.backend_user.dto.request.UserSignUpRequest;
 import com.ddiring.backend_user.common.exception.NotFound;
+import com.ddiring.backend_user.common.exception.BadParameter;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
@@ -75,18 +76,7 @@ public class UserService {
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
 
-    // 역할 토글
-    @Transactional
-    public User toggleUserRole(String userSeq) {
-        log.debug("Toggle role requested for userSeq={}", userSeq);
-        User user = getUserOrThrow(userSeq);
-        log.debug("Current role for userSeq={} is {}", userSeq, user.getRole());
-        user.toggleRole();
-        log.debug("Toggled role for userSeq={} to {}", userSeq, user.getRole());
-        userRepository.save(user);
-        return user;
-    }
-
+    // 카카오 로그인
     public ResponseEntity<?> kakaoLogin(String code, UserLoginRequest request) {
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
@@ -149,14 +139,14 @@ public class UserService {
             }
             return u;
         });
-        if (user == null || user.getProfileCompleted() == null || !user.getProfileCompleted()) {
-            return ResponseEntity.status(200).body(
-                    java.util.Map.of(
-                            "message", "추가 회원 정보가 필요합니다.",
-                            "code", "AdditionalInfoRequired",
-                            "email", user != null ? user.getEmail() : userInfo.getEmail(),
-                            "firstLogin", firstLogin.get()));
-        }
+        // if (user == null || user.getProfileCompleted() == null || !user.getProfileCompleted()) {
+        //     return ResponseEntity.status(200).body(
+        //             java.util.Map.of(
+        //                     "message", "추가 회원 정보가 필요합니다.",
+        //                     "code", "AdditionalInfoRequired",
+        //                     "email", user != null ? user.getEmail() : userInfo.getEmail(),
+        //                     "firstLogin", firstLogin.get()));
+        // }
         String accessToken = jwtTokenProvider.createToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
         return ResponseEntity.ok()
@@ -387,11 +377,49 @@ public class UserService {
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
+    // 역할 선택
+    @Transactional
+    public ResponseEntity<String> selectRole(String userSeq, User.Role role) {
+        User user = getUserOrThrow(userSeq);
+        if (role == null) {
+            return ResponseEntity.badRequest().body("역할(role)은 필수입니다. [USER | CREATOR]");
+        }
+        if (role != User.Role.USER && role != User.Role.CREATOR) {
+            return ResponseEntity.badRequest().body("선택 가능한 역할은 USER 또는 CREATOR 뿐입니다.");
+        }
+        // 이미 동일한 역할이면 그대로 안내
+        if (user.getRole() == role) {
+            return ResponseEntity.ok("이미 선택된 역할입니다. 현재 역할: " + user.getRole());
+        }
+        user.setRole(role);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return ResponseEntity.ok("역할이 설정되었습니다. 현재 역할: " + user.getRole());
+    }
+
     // 역할 토글
     @Transactional
     public ResponseEntity<String> toggleUserRoleWithResponse(String userSeq) {
         User user = toggleUserRole(userSeq);
         return ResponseEntity.ok("역할이 변경되었습니다. 현재 역할: " + user.getRole());
+    }
+
+    // 역할 토글 응답용
+    @Transactional
+    public User toggleUserRole(String userSeq) {
+        log.debug("Toggle role requested for userSeq={}", userSeq);
+        User user = getUserOrThrow(userSeq);
+        log.debug("Current role for userSeq={} is {}", userSeq, user.getRole());
+        if (user.getRole() == null) {
+            throw new BadParameter("현재 역할이 설정되어 있지 않습니다. 먼저 역할을 선택하세요.");
+        }
+        if (user.getRole() != User.Role.USER && user.getRole() != User.Role.CREATOR) {
+            throw new BadParameter("USER 또는 CREATOR 역할만 토글할 수 있습니다.");
+        }
+        user.toggleRole();
+        log.debug("Toggled role for userSeq={} to {}", userSeq, user.getRole());
+        userRepository.save(user);
+        return user;
     }
 
     // 사용자 상태 변경
