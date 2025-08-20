@@ -8,6 +8,7 @@ import com.ddiring.backend_user.dto.request.UserEditRequest;
 import com.ddiring.backend_user.dto.response.UserInfoResponse;
 import com.ddiring.backend_user.dto.response.UserListResponse;
 import com.ddiring.backend_user.entity.User;
+import com.ddiring.backend_user.entity.User.Role;
 import com.ddiring.backend_user.kakao.KakaoOAuthService;
 import com.ddiring.backend_user.repository.UserRepository;
 import com.ddiring.backend_user.secret.jwt.JwtTokenProvider;
@@ -69,6 +70,7 @@ public class UserService {
                         .gender(hasAdditional ? request.getGender() : null)
                         .birthDate(birthDate)
                         .age(age)
+                        .role(Role.GUEST)
                         .latestAt(LocalDateTime.now())
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())

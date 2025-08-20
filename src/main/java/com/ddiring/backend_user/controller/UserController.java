@@ -37,7 +37,6 @@ public class UserController {
 
     // 회원 정보 등록
     @PostMapping("/auth/register")
-    @PreAuthorize("hasAnyRole('USER','CREATOR')")
     public ResponseEntity<String> additionalSignup(Authentication authentication,
             @RequestBody UserAdditionalInfoRequest request) {
         String userSeq = (String) authentication.getPrincipal();
