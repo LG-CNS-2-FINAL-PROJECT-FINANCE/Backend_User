@@ -42,18 +42,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && jwtTokenProvider.validateToken(token) && !redisService.isRemoveToken(token)) {
             String role = jwtTokenProvider.getRole(token);
-            if (User.Role.ADMIN.name().equals(role)) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        "admin", null,
-                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                String userSeq = jwtTokenProvider.getUserSeqFromSubject(token);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userSeq, null,
-                        List.of(new SimpleGrantedAuthority("ROLE_USER")));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            String authority = switch (role) {
+                case "ADMIN" -> "ROLE_ADMIN";
+                case "CREATOR" -> "ROLE_CREATOR";
+                case "USER" -> "ROLE_USER";
+                default -> "ROLE_GUEST"; // GUEST 또는 알 수 없는 경우
+            };
+
+            String principal = "admin";
+            if (!User.Role.ADMIN.name().equals(role)) {
+                principal = jwtTokenProvider.getUserSeqFromSubject(token);
             }
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    principal, null, List.of(new SimpleGrantedAuthority(authority)));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

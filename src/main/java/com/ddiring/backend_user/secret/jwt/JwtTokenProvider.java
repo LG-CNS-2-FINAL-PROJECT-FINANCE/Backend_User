@@ -25,9 +25,10 @@ public class JwtTokenProvider {
         }
 
         public String createToken(User user) {
+                String role = (user.getRole() != null) ? user.getRole().name() : User.Role.GUEST.name();
                 Claims claims = Jwts.claims()
                                 .subject(String.valueOf(user.getUserSeq()))
-                                .add("role", user.getRole().name())
+                                .add("role", role)
                                 .add("userSeq", user.getUserSeq())
                                 .build();
 
@@ -38,7 +39,7 @@ public class JwtTokenProvider {
                                 .claims(Map.of(
                                                 Claims.SUBJECT, String.valueOf(user.getUserSeq()),
                                                 "tokenType", "access",
-                                                "role", user.getRole().name(),
+                                                "role", role,
                                                 "userSeq", user.getUserSeq()))
                                 .issuedAt(now)
                                 .expiration(expiry)
@@ -47,9 +48,10 @@ public class JwtTokenProvider {
         }
 
         public String adminCreateToken(User user) {
+                String role = (user.getRole() != null) ? user.getRole().name() : User.Role.ADMIN.name();
                 Claims claims = Jwts.claims()
                                 .subject(user.getAdminId())
-                                .add("role", user.getRole().name())
+                                .add("role", role)
                                 .add("userSeq", user.getUserSeq())
                                 .build();
 
@@ -60,7 +62,7 @@ public class JwtTokenProvider {
                                 .claims(Map.of(
                                                 Claims.SUBJECT, user.getAdminId(),
                                                 "tokenType", "access",
-                                                "role", user.getRole().name(),
+                                                "role", role,
                                                 "userSeq", user.getUserSeq()))
                                 .issuedAt(now)
                                 .expiration(expiry)
@@ -111,9 +113,10 @@ public class JwtTokenProvider {
         }
 
         public String createRefreshToken(User user) {
+                String role = (user.getRole() != null) ? user.getRole().name() : User.Role.GUEST.name();
                 Claims claims = Jwts.claims()
                                 .subject(String.valueOf(user.getUserSeq()))
-                                .add("role", user.getRole().name())
+                                .add("role", role)
                                 .add("userSeq", user.getUserSeq())
                                 .build();
 
@@ -123,7 +126,7 @@ public class JwtTokenProvider {
                 return Jwts.builder()
                                 .claims(Map.of(
                                                 Claims.SUBJECT, String.valueOf(user.getUserSeq()),
-                                                "role", user.getRole().name(),
+                                                "role", role,
                                                 "userSeq", user.getUserSeq()))
                                 .issuedAt(now)
                                 .expiration(expiry)

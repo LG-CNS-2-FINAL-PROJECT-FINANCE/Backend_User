@@ -30,13 +30,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/user/auth/register",
                                 "/api/user/auth/login",
                                 "/api/user/auth/admin/login",
-                                "/api/user/auth/admin/signup",
-                                "api/user/auth/logout")
+                                "/api/user/auth/admin/signup")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/")
+                        .hasAnyRole("USER", "CREATOR")
                         .requestMatchers(HttpMethod.GET, "/api/user/auth").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
