@@ -32,7 +32,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/user/auth/register",
                                 "/api/user/auth/login",
-                                "/api/user/auth/kakao/callback",
                                 "/api/user/auth/admin/login",
                                 "/api/user/auth/admin/signup",
                                 "api/user/auth/logout")

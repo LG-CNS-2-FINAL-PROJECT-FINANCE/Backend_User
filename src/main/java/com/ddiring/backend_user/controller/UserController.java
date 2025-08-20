@@ -6,6 +6,7 @@ import com.ddiring.backend_user.dto.request.UserLoginRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
 import com.ddiring.backend_user.dto.response.UserInfoResponse;
 import com.ddiring.backend_user.dto.response.UserListResponse;
+import com.ddiring.backend_user.entity.User.Role;
 import com.ddiring.backend_user.entity.User.UserStatus;
 import com.ddiring.backend_user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -90,20 +91,22 @@ public class UserController {
         return userService.deleteUserWithResponse(userSeq);
     }
 
-    // 역할 선택
+    // 역할 지정
     @PostMapping("/auth/role")
-    @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> selectRole(
-            @RequestParam String userSeq,
-            @RequestParam(name = "role") com.ddiring.backend_user.entity.User.Role role) {
+            Authentication authentication,
+            @RequestParam(name = "role") Role role) {
+        String userSeq = (String) authentication.getPrincipal();
         return userService.selectRole(userSeq, role);
     }
 
-    // 역할 토글
+    // 역할 변경
     @PostMapping("/auth/role-toggle")
-    @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
-    public ResponseEntity<String> toggleUserRole(@RequestParam String userSeq) {
-        return userService.toggleUserRoleWithResponse(userSeq);
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> toggleRole(Authentication authentication) {
+        String userSeq = (String) authentication.getPrincipal();
+        return userService.toggleRoleWithResponse(userSeq);
     }
 
     // 사용자 상태 변경(활성화)
@@ -111,7 +114,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> changeStatusActive(
             @RequestParam String userSeq,
-            @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
+            @RequestParam(name = "user_status", required = false) UserStatus status) {
         UserStatus desired = UserStatus.ACTIVE;
         if (status != null && status != desired) {
             return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (ACTIVE)");
@@ -124,7 +127,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> changeStatusDisabled(
             @RequestParam String userSeq,
-            @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
+            @RequestParam(name = "user_status", required = false) UserStatus status) {
         UserStatus desired = UserStatus.DISABLED;
         if (status != null && status != desired) {
             return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (DISABLED)");
@@ -137,7 +140,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> changeStatusDeleted(
             @RequestParam String userSeq,
-            @RequestParam(name = "user_status", required = false) com.ddiring.backend_user.entity.User.UserStatus status) {
+            @RequestParam(name = "user_status", required = false) UserStatus status) {
         UserStatus desired = UserStatus.DELETED;
         if (status != null && status != desired) {
             return ResponseEntity.badRequest().body("요청한 엔드포인트와 user_status 값이 일치하지 않습니다. (DELETED)");

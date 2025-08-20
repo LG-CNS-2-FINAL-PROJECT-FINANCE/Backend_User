@@ -1,8 +1,6 @@
 package com.ddiring.backend_user.service;
 
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
-import com.ddiring.backend_user.dto.request.UserSignUpRequest;
-import com.ddiring.backend_user.common.exception.NotFound;
 import com.ddiring.backend_user.common.exception.BadParameter;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
@@ -40,42 +38,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final PlatformTransactionManager transactionManager;
 
-    // 카카오 회원가입(이메일 등록)
-    @Transactional
-    public void registerUser(UserSignUpRequest request) {
-        User user = User.builder()
-                .email(request.getEmail())
-                .user_status(User.UserStatus.ACTIVE)
-                .profileCompleted(false)
-                .build();
-        userRepository.save(user);
-    }
-
-    // 회원 가입(추가 정보 등록)
-    @Transactional
-    public void signUpUser(UserAdditionalInfoRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new NotFound("이메일로 가입된 회원이 없습니다."));
-        user.setUserName(request.getUserName());
-        user.setNickname(request.getNickname());
-        user.setGender(request.getGender());
-        user.setBirthDate(request.getBirthDate());
-        user.setAge(calculateAge(request.getBirthDate()));
-        user.setUser_status(User.UserStatus.ACTIVE);
-        user.setProfileCompleted(true);
-        user.setCreatedId(user.getCreatedId() == null ? 0 : user.getCreatedId());
-        user.setUpdatedId(user.getUpdatedId() == null ? 0 : user.getUpdatedId());
-        userRepository.save(user);
-    }
-
-    // 나이 계산
-    public int calculateAge(LocalDate birthDate) {
-        if (birthDate == null)
-            throw new IllegalArgumentException("생년월일은 필수 입력 항목입니다.");
-        return Period.between(birthDate, LocalDate.now()).getYears();
-    }
-
     // 카카오 로그인
+    // TODO: 처음 로그인 파악
     public ResponseEntity<?> kakaoLogin(String code, UserLoginRequest request) {
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
@@ -157,6 +121,31 @@ public class UserService {
                         "refreshToken", refreshToken
                 // "firstLogin", firstLogin.get()
                 ));
+    }
+
+    // 회원 정보 등록
+    @Transactional
+    public void signUpUser(UserAdditionalInfoRequest request) {
+        User user = new User();
+        user.setUserName(request.getUserName());
+        user.setNickname(request.getNickname());
+        user.setGender(request.getGender());
+        user.setBirthDate(request.getBirthDate());
+        user.setAge(calculateAge(request.getBirthDate()));
+        user.setUser_status(User.UserStatus.ACTIVE);
+        user.setProfileCompleted(true);
+        user.setCreatedId(user.getCreatedId() == null ? 0 : user.getCreatedId());
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedId(user.getUpdatedId() == null ? 0 : user.getUpdatedId());
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    // 나이 계산
+    public int calculateAge(LocalDate birthDate) {
+        if (birthDate == null)
+            throw new IllegalArgumentException("생년월일은 필수 입력 항목입니다.");
+        return Period.between(birthDate, LocalDate.now()).getYears();
     }
 
     // 관리자 회원가입
@@ -318,14 +307,7 @@ public class UserService {
 
     // 역할 토글
     @Transactional
-    public ResponseEntity<String> toggleUserRoleWithResponse(String userSeq) {
-        User user = toggleUserRole(userSeq);
-        return ResponseEntity.ok("역할이 변경되었습니다. 현재 역할: " + user.getRole());
-    }
-
-    // 역할 토글 응답용
-    @Transactional
-    public User toggleUserRole(String userSeq) {
+    public User toggleRole(String userSeq) {
         log.debug("Toggle role requested for userSeq={}", userSeq);
         User user = getUserOrThrow(userSeq);
         log.debug("Current role for userSeq={} is {}", userSeq, user.getRole());
@@ -339,6 +321,13 @@ public class UserService {
         log.debug("Toggled role for userSeq={} to {}", userSeq, user.getRole());
         userRepository.save(user);
         return user;
+    }
+
+    // 역할 토글 응답용
+    @Transactional
+    public ResponseEntity<String> toggleRoleWithResponse(String userSeq) {
+        User user = toggleRole(userSeq);
+        return ResponseEntity.ok("역할이 변경되었습니다. 현재 역할: " + user.getRole());
     }
 
     // 사용자 상태 변경
