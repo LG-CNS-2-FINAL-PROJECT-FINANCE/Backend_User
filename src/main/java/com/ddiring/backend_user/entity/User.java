@@ -21,13 +21,13 @@ public class User {
     @Column(name = "user_seq", unique = true)
     private String userSeq;
 
-    @Column(name = "admin_id")
+    @Column(name = "admin_id", unique = true)
     private String adminId;
 
     @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")

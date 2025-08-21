@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,15 +46,6 @@ public class UserService {
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
 
-        // if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
-        // return ResponseEntity.status(400).body(
-        // java.util.Map.of(
-        // "message", "카카오 계정에 이메일 정보가 없습니다. 카카오에서 이메일 제공에 동의했는지, 계정에 이메일이 등록되어 있는지
-        // 확인하세요.",
-        // "code", "NoEmail",
-        // "data", null));
-        // }
-        //
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
         AtomicBoolean firstLogin = new AtomicBoolean(false);
         User user = tx.execute(status -> {
@@ -102,25 +94,33 @@ public class UserService {
             }
             return u;
         });
-        // if (user == null || user.getProfileCompleted() == null ||
-        // !user.getProfileCompleted()) {
-        // return ResponseEntity.status(200).body(
-        // java.util.Map.of(
-        // "message", "추가 회원 정보가 필요합니다.",
-        // "code", "AdditionalInfoRequired",
-        // "email", user != null ? user.getEmail() : userInfo.getEmail(),
-        // "firstLogin", firstLogin.get()));
-        // }
         String accessToken = jwtTokenProvider.createToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
+
+        long accessTtlSec = 0L;
+        long refreshTtlSec = 0L;
+        try {
+            accessTtlSec = jwtTokenProvider.getRemainingTime(accessToken);
+        } catch (Exception ignored) {
+        }
+        try {
+            refreshTtlSec = jwtTokenProvider.getRemainingTime(refreshToken);
+        } catch (Exception ignored) {
+        }
+        String accessTokenExpiresAt = Instant.now().plusSeconds(Math.max(accessTtlSec, 0L)).toString();
+        String refreshTokenExpiresAt = Instant.now().plusSeconds(Math.max(refreshTtlSec, 0L)).toString();
+
+        boolean completed = user != null && Boolean.TRUE.equals(user.getProfileCompleted());
+        String message = completed ? "로그인 성공" : "추가 회원 정보가 필요합니다.";
+
         return ResponseEntity.ok()
                 .header("Authorization", "Bearer " + accessToken)
                 .body(java.util.Map.of(
-                        "message", "로그인 성공",
+                        "message", message,
                         "accessToken", accessToken,
-                        "refreshToken", refreshToken
-                // "firstLogin", firstLogin.get()
-                ));
+                        "refreshToken", refreshToken,
+                        "accessTokenExpiresAt", accessTokenExpiresAt,
+                        "refreshTokenExpiresAt", refreshTokenExpiresAt));
     }
 
     // 회원 정보 등록
