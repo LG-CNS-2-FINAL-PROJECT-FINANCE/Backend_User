@@ -35,7 +35,7 @@ public class SecurityConfig {
                                 "/api/user/auth/admin/signup")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/")
-                        .hasAnyRole("USER", "CREATOR")
+                        .hasAnyRole("USER", "CREATOR", "GUEST")
                         .requestMatchers(HttpMethod.GET, "/api/user/auth").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
