@@ -43,7 +43,6 @@ public class UserService {
     private final PlatformTransactionManager transactionManager;
 
     // 카카오 로그인
-    // TODO: 처음 로그인 파악
     public ResponseEntity<?> kakaoLogin(String code, UserLoginRequest request) {
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
         KakaoOAuthService.KakaoUserInfo userInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
@@ -136,10 +135,6 @@ public class UserService {
         user.setAge(calculateAge(request.getBirthDate()));
         user.setUser_status(User.UserStatus.ACTIVE);
         user.setProfileCompleted(true);
-        user.setCreatedId(user.getCreatedId() == null ? 0 : user.getCreatedId());
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedId(user.getUpdatedId() == null ? 0 : user.getUpdatedId());
-        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
@@ -163,9 +158,9 @@ public class UserService {
                 .userName("관리자")
                 .nickname("관리자")
                 .latestAt(LocalDateTime.now())
-                .createdId(0)
+                .createdId("system")
                 .createdAt(LocalDateTime.now())
-                .updatedId(0)
+                .updatedId("system")
                 .updatedAt(LocalDateTime.now())
                 .user_status(User.UserStatus.ACTIVE)
                 .profileCompleted(true)
@@ -298,7 +293,7 @@ public class UserService {
     public void deleteUser(String userSeq) {
         User user = getUserOrThrow(userSeq);
         user.updateUserStatus(User.UserStatus.DELETED);
-        user.updateUpdatedInfo(0);
+        user.updateUpdatedInfo("system");
     }
 
     // 회원탈퇴 응답용
@@ -357,7 +352,7 @@ public class UserService {
     public User updateUserStatus(String userSeq, User.UserStatus status) {
         User user = getUserOrThrow(userSeq);
         user.updateUserStatus(status);
-        user.updateUpdatedInfo(0);
+        user.updateUpdatedInfo("system");
         userRepository.save(user);
         return user;
     }

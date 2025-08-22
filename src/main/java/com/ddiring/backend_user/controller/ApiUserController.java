@@ -23,4 +23,3 @@ public class ApiUserController {
         return apiUserService.getUserInfo(userInfo);
     }
 }
-

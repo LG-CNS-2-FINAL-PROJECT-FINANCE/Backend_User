@@ -6,9 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 @Slf4j
 @Entity
 @Table(name = "`user`")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -58,15 +65,19 @@ public class User {
     private LocalDateTime latestAt;
 
     @Column(name = "created_id")
-    private Integer createdId;
+    @CreatedBy
+    private String createdId;
 
     @Column(name = "created_at")
+    @CreatedDate
     private LocalDateTime createdAt;
 
     @Column(name = "updated_id")
-    private Integer updatedId;
+    @LastModifiedBy
+    private String updatedId;
 
     @Column(name = "updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @Column(name = "profile_completed")
@@ -89,7 +100,7 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateUpdatedInfo(Integer updatedId) {
+    public void updateUpdatedInfo(String updatedId) {
         this.updatedId = updatedId;
         this.updatedAt = LocalDateTime.now();
     }
