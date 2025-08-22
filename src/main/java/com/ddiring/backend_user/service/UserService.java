@@ -182,12 +182,28 @@ public class UserService {
         }
         String accessToken = jwtTokenProvider.adminCreateToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
+
+        long accessTtlSec = 0L;
+        long refreshTtlSec = 0L;
+        try {
+            accessTtlSec = jwtTokenProvider.getRemainingTime(accessToken);
+        } catch (Exception ignored) {
+        }
+        try {
+            refreshTtlSec = jwtTokenProvider.getRemainingTime(refreshToken);
+        } catch (Exception ignored) {
+        }
+        String accessTokenExpiresAt = Instant.now().plusSeconds(Math.max(accessTtlSec, 0L)).toString();
+        String refreshTokenExpiresAt = Instant.now().plusSeconds(Math.max(refreshTtlSec, 0L)).toString();
+
         return ResponseEntity.ok()
                 .header("Authorization", "Bearer " + accessToken)
                 .body(java.util.Map.of(
                         "message", "관리자 로그인 성공",
                         "accessToken", accessToken,
-                        "refreshToken", refreshToken));
+                        "refreshToken", refreshToken,
+                        "accessTokenExpiresAt", accessTokenExpiresAt,
+                        "refreshTokenExpiresAt", refreshTokenExpiresAt));
     }
 
     // 개인 정보 조회
@@ -305,7 +321,7 @@ public class UserService {
 
     // 역할 선택
     @Transactional
-    public ResponseEntity<String> selectRole(String userSeq, Role role) {
+    public ResponseEntity<?> selectRole(String userSeq, Role role) {
         User user = getUserOrThrow(userSeq);
 
         Role current = user.getRole();
@@ -369,12 +385,31 @@ public class UserService {
     }
 
     // 토큰 재발급 응답
-    private ResponseEntity<String> buildRoleChangeResponse(User user, String message) {
-        String newAccess = jwtTokenProvider.createToken(user);
-        String newRefresh = jwtTokenProvider.createRefreshToken(user);
+    private ResponseEntity<?> buildRoleChangeResponse(User user, String message) {
+        String accessToken = jwtTokenProvider.createToken(user);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user);
+
+        long accessTtlSec = 0L;
+        long refreshTtlSec = 0L;
+        try {
+            accessTtlSec = jwtTokenProvider.getRemainingTime(accessToken);
+        } catch (Exception ignored) {
+        }
+        try {
+            refreshTtlSec = jwtTokenProvider.getRemainingTime(refreshToken);
+        } catch (Exception ignored) {
+        }
+        String accessTokenExpiresAt = Instant.now().plusSeconds(Math.max(accessTtlSec, 0L)).toString();
+        String refreshTokenExpiresAt = Instant.now().plusSeconds(Math.max(refreshTtlSec, 0L)).toString();
+
         return ResponseEntity.ok()
-                .header("Authorization", "Bearer " + newAccess)
-                .header("X-Refresh-Token", newRefresh)
-                .body(message);
+                .header("Authorization", "Bearer " + accessToken)
+                .body(java.util.Map.of(
+                        "message", message,
+                        "accessToken", accessToken,
+                        "refreshToken", refreshToken,
+                        "accessTokenExpiresAt", accessTokenExpiresAt,
+                        "refreshTokenExpiresAt", refreshTokenExpiresAt));
+
     }
 }

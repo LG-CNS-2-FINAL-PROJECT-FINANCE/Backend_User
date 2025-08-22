@@ -105,7 +105,7 @@ public class UserController {
     // 역할 선택
     @PostMapping("/role")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> selectRole(
+    public ResponseEntity<?> selectRole(
             Authentication authentication,
             @RequestParam(name = "role", required = false) Role role) {
         String userSeq = (String) authentication.getPrincipal();
