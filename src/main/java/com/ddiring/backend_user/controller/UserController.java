@@ -57,7 +57,7 @@ public class UserController {
     }
 
     // 개인 정보 조회
-    @GetMapping
+    @GetMapping("/info")
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'GUEST')")
     public UserInfoResponse getMyInfo(Authentication authentication) {
         String userSeq = (String) authentication.getPrincipal();
