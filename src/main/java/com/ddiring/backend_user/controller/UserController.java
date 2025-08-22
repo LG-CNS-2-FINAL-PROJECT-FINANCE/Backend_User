@@ -36,7 +36,7 @@ public class UserController {
     }
 
     // 회원 정보 등록
-    @PostMapping("/auth/register")
+    @PostMapping("/register")
     public ResponseEntity<String> additionalSignup(Authentication authentication,
             @RequestBody UserAdditionalInfoRequest request) {
         String userSeq = (String) authentication.getPrincipal();
@@ -65,21 +65,30 @@ public class UserController {
     }
 
     // 모든 사용자 정보 조회 (관리자 전용)
-    @GetMapping("/auth")
+    @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserListResponse> getUserList() {
         return userService.getUserList();
     }
 
+    // 사용자 검색 (관리자 전용)
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserListResponse> searchUsers(
+            @RequestParam String searchType,
+            @RequestParam String search) {
+        return userService.searchUsers(searchType, search);
+    }
+
     // 회원 정보 수정
-    @PostMapping("/auth/edit")
+    @PostMapping("/edit")
     @PreAuthorize("hasRole('ADMIN') or #request.userSeq == authentication.principal")
     public void editUser(@P("request") @RequestBody UserEditRequest request) {
         userService.editUser(request);
     }
 
     // 로그아웃
-    @PostMapping("/auth/logout")
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-Refresh-Token", required = false) String refreshTokenHeader) {
@@ -87,14 +96,14 @@ public class UserController {
     }
 
     // 회원탈퇴
-    @PostMapping("/auth/delete")
+    @PostMapping("/delete")
     @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
     public ResponseEntity<String> deleteUser(@P("userSeq") @RequestParam String userSeq) {
         return userService.deleteUserWithResponse(userSeq);
     }
 
     // 역할 지정
-    @PostMapping("/auth/role")
+    @PostMapping("/role")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> selectRole(
             Authentication authentication,
@@ -104,7 +113,7 @@ public class UserController {
     }
 
     // 역할 변경 (USER <-> CREATOR)
-    @PostMapping("/auth/role-toggle")
+    @PostMapping("/role-toggle")
     @PreAuthorize("hasAnyRole('USER','CREATOR')")
     public ResponseEntity<String> toggleRole(Authentication authentication) {
         String userSeq = (String) authentication.getPrincipal();
@@ -112,7 +121,7 @@ public class UserController {
     }
 
     // 사용자 상태 변경(활성화)
-    @PostMapping("/auth/active")
+    @PostMapping("/active")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> changeStatusActive(
             @RequestParam String userSeq,
@@ -125,7 +134,7 @@ public class UserController {
     }
 
     // 사용자 상태 변경(비활성화)
-    @PostMapping("/auth/disabled")
+    @PostMapping("/disabled")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> changeStatusDisabled(
             @RequestParam String userSeq,
@@ -138,7 +147,7 @@ public class UserController {
     }
 
     // 사용자 상태 변경(정지/삭제)
-    @PostMapping("/auth/deleted")
+    @PostMapping("/deleted")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> changeStatusDeleted(
             @RequestParam String userSeq,

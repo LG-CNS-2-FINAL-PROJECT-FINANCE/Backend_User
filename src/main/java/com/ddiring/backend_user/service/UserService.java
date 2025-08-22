@@ -25,8 +25,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -220,7 +222,28 @@ public class UserService {
                         user.getGender(),
                         user.getUser_status(),
                         user.getLatestAt()))
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
+    }
+
+    // 사용자 검색
+    @Transactional(readOnly = true)
+    public List<UserListResponse> searchUsers(String searchType, String search) {
+        List<User> users = new ArrayList<>();
+        switch (searchType.toLowerCase()) {
+            case "email" -> users = userRepository.findByEmailContainingIgnoreCase(search);
+            case "nickname" -> users = userRepository.findByNicknameContainingIgnoreCase(search);
+        }
+        return users.stream()
+                .map(user -> new UserListResponse(
+                        user.getUserSeq(),
+                        user.getEmail(),
+                        user.getNickname(),
+                        user.getRole(),
+                        user.getAge(),
+                        user.getGender(),
+                        user.getUser_status(),
+                        user.getLatestAt()))
+                .toList();
     }
 
     // 회원 정보 수정 (필요 시 유지)
@@ -295,7 +318,6 @@ public class UserService {
         if (role != User.Role.USER && role != User.Role.CREATOR) {
             return ResponseEntity.badRequest().body("선택 가능한 역할은 USER 또는 CREATOR 뿐입니다.");
         }
-        // 이미 동일한 역할이면 그대로 안내
         if (user.getRole() == role) {
             return ResponseEntity.ok("이미 선택된 역할입니다. 현재 역할: " + user.getRole());
         }

@@ -32,11 +32,19 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/user/auth/login",
                                 "/api/user/auth/admin/login",
-                                "/api/user/auth/admin/signup")
+                                "/api/user/auth/admin/signup"
+                        // "/api/user/detail"
+                        )
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user", "/api/user/")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/user/info")
                         .hasAnyRole("USER", "CREATOR", "GUEST")
-                        .requestMatchers(HttpMethod.GET, "/api/user/auth").hasRole("ADMIN")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/user/list",
+                                "/api/user/search")
+                        .hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
                         UsernamePasswordAuthenticationFilter.class);
