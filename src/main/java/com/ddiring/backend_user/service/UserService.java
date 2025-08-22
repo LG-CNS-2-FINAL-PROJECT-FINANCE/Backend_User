@@ -1,7 +1,6 @@
 package com.ddiring.backend_user.service;
 
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
-import com.ddiring.backend_user.common.exception.BadParameter;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
@@ -15,6 +14,7 @@ import com.ddiring.backend_user.secret.jwt.JwtTokenProvider;
 import com.ddiring.backend_user.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -305,46 +305,35 @@ public class UserService {
 
     // 역할 선택
     @Transactional
-    public ResponseEntity<String> selectRole(String userSeq, User.Role role) {
+    public ResponseEntity<String> selectRole(String userSeq, Role role) {
         User user = getUserOrThrow(userSeq);
+
+        Role current = user.getRole();
+        if (current == null || current == Role.GUEST) {
+            if (role == null || (role != Role.USER && role != Role.CREATOR)) {
+                return ResponseEntity.badRequest().body("역할을 선택해주세요. USER | CREATOR");
+            }
+            user.setRole(role);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return buildRoleChangeResponse(user, "역할이 설정되었습니다. 현재 역할: " + user.getRole());
+        }
+
         if (role == null) {
-            return ResponseEntity.badRequest().body("역할(role)은 필수입니다. [USER | CREATOR]");
+            user.setRole(current == Role.USER ? Role.CREATOR : Role.USER);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return buildRoleChangeResponse(user, "역할이 변경되었습니다. 현재 역할: " + user.getRole());
         }
-        if (role != User.Role.USER && role != User.Role.CREATOR) {
-            return ResponseEntity.badRequest().body("선택 가능한 역할은 USER 또는 CREATOR 뿐입니다.");
+
+        if (current == role) {
+            return buildRoleChangeResponse(user, "이미 선택된 역할입니다. 현재 역할: " + user.getRole());
         }
-        if (user.getRole() == role) {
-            return ResponseEntity.ok("이미 선택된 역할입니다. 현재 역할: " + user.getRole());
-        }
+
         user.setRole(role);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-        return ResponseEntity.ok("역할이 설정되었습니다. 현재 역할: " + user.getRole());
-    }
-
-    // 역할 토글
-    @Transactional
-    public User toggleRole(String userSeq) {
-        log.debug("Toggle role requested for userSeq={}", userSeq);
-        User user = getUserOrThrow(userSeq);
-        log.debug("Current role for userSeq={} is {}", userSeq, user.getRole());
-        if (user.getRole() == null) {
-            throw new BadParameter("현재 역할이 설정되어 있지 않습니다. 먼저 역할을 선택하세요.");
-        }
-        if (user.getRole() != User.Role.USER && user.getRole() != User.Role.CREATOR) {
-            throw new BadParameter("USER 또는 CREATOR 역할만 토글할 수 있습니다.");
-        }
-        user.toggleRole();
-        log.debug("Toggled role for userSeq={} to {}", userSeq, user.getRole());
-        userRepository.save(user);
-        return user;
-    }
-
-    // 역할 토글 응답용
-    @Transactional
-    public ResponseEntity<String> toggleRoleWithResponse(String userSeq) {
-        User user = toggleRole(userSeq);
-        return ResponseEntity.ok("역할이 변경되었습니다. 현재 역할: " + user.getRole());
+        return buildRoleChangeResponse(user, "역할이 변경되었습니다. 현재 역할: " + user.getRole());
     }
 
     // 사용자 상태 변경
@@ -377,5 +366,15 @@ public class UserService {
                 && request.getNickname() != null
                 && request.getGender() != null
                 && request.getBirthDate() != null;
+    }
+
+    // 토큰 재발급 응답
+    private ResponseEntity<String> buildRoleChangeResponse(User user, String message) {
+        String newAccess = jwtTokenProvider.createToken(user);
+        String newRefresh = jwtTokenProvider.createRefreshToken(user);
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + newAccess)
+                .header("X-Refresh-Token", newRefresh)
+                .body(message);
     }
 }

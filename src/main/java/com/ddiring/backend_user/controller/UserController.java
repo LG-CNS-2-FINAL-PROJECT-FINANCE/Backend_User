@@ -102,22 +102,14 @@ public class UserController {
         return userService.deleteUserWithResponse(userSeq);
     }
 
-    // 역할 지정
+    // 역할 선택
     @PostMapping("/role")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> selectRole(
             Authentication authentication,
-            @RequestParam(name = "role") Role role) {
+            @RequestParam(name = "role", required = false) Role role) {
         String userSeq = (String) authentication.getPrincipal();
         return userService.selectRole(userSeq, role);
-    }
-
-    // 역할 변경 (USER <-> CREATOR)
-    @PostMapping("/role-toggle")
-    @PreAuthorize("hasAnyRole('USER','CREATOR')")
-    public ResponseEntity<String> toggleRole(Authentication authentication) {
-        String userSeq = (String) authentication.getPrincipal();
-        return userService.toggleRoleWithResponse(userSeq);
     }
 
     // 사용자 상태 변경(활성화)

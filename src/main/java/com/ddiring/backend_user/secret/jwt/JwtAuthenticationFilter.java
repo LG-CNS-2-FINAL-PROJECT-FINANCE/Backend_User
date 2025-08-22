@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        if ("/api/user/auth/logout".equals(path)) {
+        if ("/api/user/logout".equals(path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 case "ADMIN" -> "ROLE_ADMIN";
                 case "CREATOR" -> "ROLE_CREATOR";
                 case "USER" -> "ROLE_USER";
-                default -> "ROLE_GUEST"; // GUEST 또는 알 수 없는 경우
+                default -> "ROLE_GUEST";
             };
 
             String principal = "admin";
