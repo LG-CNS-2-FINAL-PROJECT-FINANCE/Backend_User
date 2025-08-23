@@ -44,8 +44,8 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/list",
-                                                                "/api/user/search",
-                                                                "/api/user/info")
+                                                                "/api/user/search"
+                                                                )
                                                 .hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
