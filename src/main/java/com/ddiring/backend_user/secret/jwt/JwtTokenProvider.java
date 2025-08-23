@@ -91,6 +91,19 @@ public class JwtTokenProvider {
                                 .getSubject();
         }
 
+        public String getUserSeqClaim(String token) {
+                try {
+                        return Jwts.parser()
+                                        .verifyWith(key)
+                                        .build()
+                                        .parseSignedClaims(token)
+                                        .getPayload()
+                                        .get("userSeq", String.class);
+                } catch (Exception e) {
+                        return null;
+                }
+        }
+
         public long getRemainingTime(String token) {
                 Date expiration = Jwts.parser()
                                 .verifyWith(key)

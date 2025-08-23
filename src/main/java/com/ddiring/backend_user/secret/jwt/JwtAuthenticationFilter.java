@@ -1,6 +1,5 @@
 package com.ddiring.backend_user.secret.jwt;
 
-import com.ddiring.backend_user.entity.User;
 import com.ddiring.backend_user.redis.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -49,8 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 default -> "ROLE_GUEST";
             };
 
-            String principal = "admin";
-            if (!User.Role.ADMIN.name().equals(role)) {
+            String principal = jwtTokenProvider.getUserSeqClaim(token);
+            if (principal == null) {
                 principal = jwtTokenProvider.getUserSeqFromSubject(token);
             }
 
