@@ -33,8 +33,8 @@ public class SecurityConfig {
                                                                 "/api/user/auth/login",
                                                                 "/api/user/auth/admin/login",
                                                                 "/api/user/auth/admin/signup",
-                                                                "/api/user/logout"
-                                                // "/api/user/detail"
+                                                                "/api/user/logout",
+                                                                "/api/user/detail"
                                                 )
                                                 .permitAll()
                                                 .requestMatchers(
