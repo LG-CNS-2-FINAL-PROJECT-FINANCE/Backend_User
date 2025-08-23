@@ -40,7 +40,7 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/info")
-                                                .hasAnyRole("USER", "CREATOR", "GUEST")
+                                                .hasAnyRole("USER", "CREATOR", "GUEST", "ADMIN")
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/list",
