@@ -40,11 +40,12 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/info")
-                                                .hasAnyRole("USER", "CREATOR", "GUEST", "ADMIN")
+                                                .hasAnyRole("USER", "CREATOR", "GUEST")
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/list",
-                                                                "/api/user/search")
+                                                                "/api/user/search",
+                                                                "/api/user/info")
                                                 .hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
