@@ -16,38 +16,39 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final JwtTokenProvider jwtTokenProvider;
-    private final RedisService redisService;
+        private final JwtTokenProvider jwtTokenProvider;
+        private final RedisService redisService;
 
-    public SecurityConfig(JwtTokenProvider jwtTokenProvider, RedisService redisService) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.redisService = redisService;
-    }
+        public SecurityConfig(JwtTokenProvider jwtTokenProvider, RedisService redisService) {
+                this.jwtTokenProvider = jwtTokenProvider;
+                this.redisService = redisService;
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/user/auth/login",
-                                "/api/user/auth/admin/login",
-                                "/api/user/auth/admin/signup"
-                        // "/api/user/detail"
-                        )
-                        .permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/user/info")
-                        .hasAnyRole("USER", "CREATOR", "GUEST")
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/user/list",
-                                "/api/user/search")
-                        .hasRole("ADMIN")
-                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
-                        UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/api/user/auth/login",
+                                                                "/api/user/auth/admin/login",
+                                                                "/api/user/auth/admin/signup",
+                                                                "/api/user/logout"
+                                                // "/api/user/detail"
+                                                )
+                                                .permitAll()
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/user/info")
+                                                .hasAnyRole("USER", "CREATOR", "GUEST")
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/user/list",
+                                                                "/api/user/search")
+                                                .hasRole("ADMIN")
+                                                .anyRequest().authenticated())
+                                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
+                                                UsernamePasswordAuthenticationFilter.class);
+                return http.build();
+        }
 }
