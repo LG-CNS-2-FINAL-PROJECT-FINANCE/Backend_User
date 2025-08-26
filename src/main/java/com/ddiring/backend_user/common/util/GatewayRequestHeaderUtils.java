@@ -1,14 +1,15 @@
-package com.example.User_Service.common.util;
+package com.ddiring.backend_user.common.util;
 
-import com.example.User_Service.common.exception.CustomException;
-import com.example.User_Service.common.exception.ErrorCode;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.ddiring.backend_user.common.exception.CustomException;
+import com.ddiring.backend_user.common.exception.ErrorCode;
+
 public class GatewayRequestHeaderUtils {
     public static String getRequestHeaderParamAsString(String key) {
-        ServletRequestAttributes requestAttributes =
-                (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
+                .currentRequestAttributes();
         return requestAttributes.getRequest().getHeader(key);
     }
 

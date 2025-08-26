@@ -1,4 +1,4 @@
-package com.example.User_Service.common.exception;
+package com.ddiring.backend_user.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

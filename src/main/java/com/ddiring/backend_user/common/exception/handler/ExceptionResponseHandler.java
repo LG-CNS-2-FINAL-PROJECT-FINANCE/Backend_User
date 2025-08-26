@@ -1,13 +1,13 @@
-package com.example.User_Service.common.exception.handler;
+package com.ddiring.backend_user.common.exception.handler;
 
-
-import com.example.User_Service.common.exception.CustomException;
-import com.example.User_Service.common.exception.ErrorCode;
-import com.example.User_Service.common.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.ddiring.backend_user.common.exception.CustomException;
+import com.ddiring.backend_user.common.exception.ErrorCode;
+import com.ddiring.backend_user.common.response.ApiResponse;
 
 @RestControllerAdvice
 public class ExceptionResponseHandler {
@@ -24,6 +24,5 @@ public class ExceptionResponseHandler {
                 .body(ApiResponse.error(message, errorCode));
 
     }
-
 
 }

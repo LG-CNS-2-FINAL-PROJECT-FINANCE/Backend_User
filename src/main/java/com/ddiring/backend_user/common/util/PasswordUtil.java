@@ -1,4 +1,4 @@
-package com.example.User_Service.common.util;
+package com.ddiring.backend_user.common.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
