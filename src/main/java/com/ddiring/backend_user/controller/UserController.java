@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.parameters.P;
 import java.util.List;
 
 @Slf4j
@@ -83,7 +82,7 @@ public class UserController {
 
     // 회원 정보 수정
     @PostMapping("/edit")
-    @PreAuthorize("hasRole('ADMIN') or #request.userSeq == authentication.principal")
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'GUEST', 'ADMIN')")
     public void editUser(@RequestBody UserEditRequest request) {
         String userSeq = GatewayRequestHeaderUtils.getUserSeq();
         userService.editUser(userSeq, request);
@@ -99,8 +98,9 @@ public class UserController {
 
     // 회원탈퇴
     @PostMapping("/delete")
-    @PreAuthorize("hasRole('ADMIN') or #userSeq == authentication.principal")
-    public ResponseEntity<String> deleteUser(@P("userSeq") @RequestParam String userSeq) {
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'GUEST', 'ADMIN')")
+    public ResponseEntity<String> deleteUser() {
+        String userSeq = GatewayRequestHeaderUtils.getUserSeq();
         return userService.deleteUserWithResponse(userSeq);
     }
 

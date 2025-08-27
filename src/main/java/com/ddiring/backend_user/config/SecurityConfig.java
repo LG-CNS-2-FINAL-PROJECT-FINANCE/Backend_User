@@ -34,13 +34,16 @@ public class SecurityConfig {
                                                                 "/api/user/auth/admin/login",
                                                                 "/api/user/auth/admin/signup",
                                                                 "/api/user/logout",
-                                                                "/api/user/detail",
-                                                                "/api/user/edit"
-                                                                // "/actuator/**",
-                                                                // "localhost:9090",
-                                                                // "localhost:3000"
-                                                                )
+                                                                "/api/user/detail"
+                                                // "/actuator/**",
+                                                // "localhost:9090",
+                                                // "localhost:3000"
+                                                )
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/user/edit",
+                                                                "api/user/delete")
+                                                .hasAnyRole("USER", "CREATOR", "GUEST", "ADMIN")
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/info")

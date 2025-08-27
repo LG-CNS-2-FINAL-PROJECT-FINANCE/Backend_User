@@ -8,6 +8,7 @@ import com.ddiring.backend_user.dto.response.UserInfoResponse;
 import com.ddiring.backend_user.dto.response.UserListResponse;
 import com.ddiring.backend_user.entity.User;
 import com.ddiring.backend_user.entity.User.Role;
+import com.ddiring.backend_user.entity.User.UserStatus;
 import com.ddiring.backend_user.kakao.KakaoOAuthService;
 import com.ddiring.backend_user.repository.UserRepository;
 import com.ddiring.backend_user.secret.jwt.JwtTokenProvider;
@@ -308,7 +309,7 @@ public class UserService {
     @Transactional
     public void deleteUser(String userSeq) {
         User user = getUserOrThrow(userSeq);
-        user.updateUserStatus(User.UserStatus.DELETED);
+        user.updateUserStatus(UserStatus.DELETED);
         user.updateUpdatedInfo("system");
     }
 
@@ -410,6 +411,5 @@ public class UserService {
                         "refreshToken", refreshToken,
                         "accessTokenExpiresAt", accessTokenExpiresAt,
                         "refreshTokenExpiresAt", refreshTokenExpiresAt));
-
     }
 }
