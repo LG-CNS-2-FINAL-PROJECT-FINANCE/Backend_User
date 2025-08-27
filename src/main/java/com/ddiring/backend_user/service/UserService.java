@@ -214,6 +214,7 @@ public class UserService {
                 user.getEmail(),
                 user.getNickname(),
                 user.getRole(),
+                user.getBirthDate(),
                 user.getAge(),
                 user.getGender(),
                 user.getUser_status(),
