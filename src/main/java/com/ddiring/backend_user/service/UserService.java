@@ -263,7 +263,6 @@ public class UserService {
     public void editUser(String userSeq, UserEditRequest request) {
         User user = getUserOrThrow(userSeq);
         user.setNickname(request.getNickname());
-        user.setUpdatedAt(request.getUpdateAt());
         userRepository.save(user);
     }
 
