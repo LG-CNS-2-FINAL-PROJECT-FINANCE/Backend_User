@@ -1,6 +1,5 @@
 package com.ddiring.backend_user.controller;
 
-import com.ddiring.backend_user.common.util.GatewayRequestHeaderUtils;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
@@ -83,8 +82,8 @@ public class UserController {
     // 회원 정보 수정
     @PostMapping("/edit")
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'GUEST', 'ADMIN')")
-    public void editUser(@RequestBody UserEditRequest request) {
-        String userSeq = GatewayRequestHeaderUtils.getUserSeq();
+    public void editUser(Authentication authentication, @RequestBody UserEditRequest request) {
+        String userSeq = (String) authentication.getPrincipal();
         userService.editUser(userSeq, request);
     }
 
@@ -99,8 +98,8 @@ public class UserController {
     // 회원탈퇴
     @PostMapping("/delete")
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'GUEST', 'ADMIN')")
-    public ResponseEntity<String> deleteUser() {
-        String userSeq = GatewayRequestHeaderUtils.getUserSeq();
+    public ResponseEntity<String> deleteUser(Authentication authentication) {
+        String userSeq = (String) authentication.getPrincipal();
         return userService.deleteUserWithResponse(userSeq);
     }
 
