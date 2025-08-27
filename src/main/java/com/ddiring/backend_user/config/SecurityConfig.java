@@ -34,8 +34,12 @@ public class SecurityConfig {
                                                                 "/api/user/auth/admin/login",
                                                                 "/api/user/auth/admin/signup",
                                                                 "/api/user/logout",
-                                                                "/api/user/detail"
-                                                )
+                                                                "/api/user/detail",
+                                                                "/api/user/edit"
+                                                                // "/actuator/**",
+                                                                // "localhost:9090",
+                                                                // "localhost:3000"
+                                                                )
                                                 .permitAll()
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
@@ -44,8 +48,7 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/user/list",
-                                                                "/api/user/search"
-                                                                )
+                                                                "/api/user/search")
                                                 .hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisService),
