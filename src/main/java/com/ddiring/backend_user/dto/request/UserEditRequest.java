@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 @Builder
 public class UserEditRequest {
 
-    private String userSeq;
     private String nickname;
     private LocalDateTime updateAt;
-
-    public String getNickname() { return nickname; }
 }

@@ -1,5 +1,6 @@
 package com.ddiring.backend_user.controller;
 
+import com.ddiring.backend_user.common.util.GatewayRequestHeaderUtils;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
@@ -83,8 +84,9 @@ public class UserController {
     // 회원 정보 수정
     @PostMapping("/edit")
     @PreAuthorize("hasRole('ADMIN') or #request.userSeq == authentication.principal")
-    public void editUser(@P("request") @RequestBody UserEditRequest request) {
-        userService.editUser(request);
+    public void editUser(@RequestBody UserEditRequest request) {
+        String userSeq = GatewayRequestHeaderUtils.getUserSeq();
+        userService.editUser(userSeq, request);
     }
 
     // 로그아웃
