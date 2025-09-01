@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -314,6 +315,7 @@ public class UserService {
         User user = getUserOrThrow(userSeq);
         user.updateUserStatus(UserStatus.DELETED);
         user.updateUpdatedInfo("deleteUser");
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
@@ -337,6 +339,18 @@ public class UserService {
 
         deleteUser(userSeq);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void purgeSoftDeletedUsers() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(60);
+        List<User> targets = userRepository.findByUserStatusAndDeletedAtBefore(UserStatus.DELETED, threshold);
+        if (targets.isEmpty())
+            return;
+        List<String> ids = targets.stream().map(User::getUserSeq).toList();
+        log.info("Hard deleting users count={} ids={}", targets.size(), ids);
+        userRepository.deleteAll(targets);
     }
 
     // 역할 선택

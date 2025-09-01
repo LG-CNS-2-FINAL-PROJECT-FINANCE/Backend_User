@@ -1,8 +1,11 @@
 package com.ddiring.backend_user.repository;
 
 import com.ddiring.backend_user.entity.User;
+import com.ddiring.backend_user.entity.User.UserStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByEmailContainingIgnoreCase(String emailPart);
 
     List<User> findByNicknameContainingIgnoreCase(String nicknamePart);
+
+    List<User> findByUserStatusAndDeletedAtBefore(UserStatus status, LocalDateTime before);
 }
