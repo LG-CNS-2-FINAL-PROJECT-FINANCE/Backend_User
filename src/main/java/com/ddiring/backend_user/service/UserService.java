@@ -345,7 +345,7 @@ public class UserService {
     @Transactional
     public void purgeSoftDeletedUsers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(60);
-        List<User> targets = userRepository.findByUserStatusAndDeletedAtBefore(UserStatus.DELETED, threshold);
+        List<User> targets = userRepository.findByUserStatusAndUpdatedAtBefore(UserStatus.DELETED, threshold);
         if (targets.isEmpty())
             return;
         List<String> ids = targets.stream().map(User::getUserSeq).toList();
