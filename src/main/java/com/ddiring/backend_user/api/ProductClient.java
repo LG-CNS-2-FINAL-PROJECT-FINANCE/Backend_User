@@ -1,22 +1,19 @@
 package com.ddiring.backend_user.api;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import java.util.List;
 
 @FeignClient(name = "product", url = "${product.base-url}", fallback = ProductClient.Fallback.class)
 public interface ProductClient {
 
-    @GetMapping("/product/{userSeq}")
-    List<ProductDto> getUserProducts(@PathVariable("userSeq") String userSeq);
+    @GetMapping("/api/product")
+    List<ProductDto> getAllProduct();
 
     class Fallback implements ProductClient {
         @Override
-        public List<ProductDto> getUserProducts(String userSeq) {
-            return Collections.emptyList();
+        public List<ProductDto> getAllProduct() {
+            return java.util.Collections.emptyList();
         }
     }
 }

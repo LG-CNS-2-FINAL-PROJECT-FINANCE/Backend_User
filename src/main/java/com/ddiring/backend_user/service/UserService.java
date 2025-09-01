@@ -321,22 +321,21 @@ public class UserService {
     @Transactional
     public ResponseEntity<String> deleteUserWithResponse(String userSeq) {
         List<ProductDto> products;
-
         try {
-            products = productClient.getUserProducts(userSeq);
+            products = productClient.getAllProduct();
         } catch (Exception e) {
             log.warn("Product service 호출 실패: {}", e.getMessage());
             products = List.of();
         }
 
-        boolean hasActive = products.stream()
+        boolean hasProceeding = products.stream()
+                .filter(p -> userSeq.equals(p.getUserSeq()))
                 .anyMatch(p -> p.getProjectStatus() != null && !"CLOSED".equalsIgnoreCase(p.getProjectStatus()));
-        if (hasActive) {
-            return ResponseEntity.badRequest().body("진행 중인 상품이 있어 탈퇴할 수 없습니다.");
+        if (hasProceeding) {
+            return ResponseEntity.badRequest().body("진행 중인 프로젝트가 있어 탈퇴할 수 없습니다.");
         }
 
         deleteUser(userSeq);
-
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
