@@ -1,6 +1,8 @@
 package com.ddiring.backend_user.service;
 
 import com.ddiring.backend_user.dto.request.UserLoginRequest;
+import com.ddiring.backend_user.api.ProductDto;
+import com.ddiring.backend_user.api.ProductClient;
 import com.ddiring.backend_user.dto.request.AdminRequest;
 import com.ddiring.backend_user.dto.request.UserAdditionalInfoRequest;
 import com.ddiring.backend_user.dto.request.UserEditRequest;
@@ -42,6 +44,7 @@ public class UserService {
     private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
     private final PlatformTransactionManager transactionManager;
+    private final ProductClient productClient;
 
     // 카카오 로그인
     public ResponseEntity<?> kakaoLogin(String code, UserLoginRequest request) {
@@ -310,13 +313,30 @@ public class UserService {
     public void deleteUser(String userSeq) {
         User user = getUserOrThrow(userSeq);
         user.updateUserStatus(UserStatus.DELETED);
-        user.updateUpdatedInfo("system");
+        user.updateUpdatedInfo("deleteUser");
+        userRepository.save(user);
     }
 
     // 회원탈퇴 응답용
     @Transactional
     public ResponseEntity<String> deleteUserWithResponse(String userSeq) {
+        List<ProductDto> products;
+
+        try {
+            products = productClient.getUserProducts(userSeq);
+        } catch (Exception e) {
+            log.warn("Product service 호출 실패: {}", e.getMessage());
+            products = List.of();
+        }
+
+        boolean hasActive = products.stream()
+                .anyMatch(p -> p.getProjectStatus() != null && !"CLOSED".equalsIgnoreCase(p.getProjectStatus()));
+        if (hasActive) {
+            return ResponseEntity.badRequest().body("진행 중인 상품이 있어 탈퇴할 수 없습니다.");
+        }
+
         deleteUser(userSeq);
+
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
