@@ -341,17 +341,17 @@ public class UserService {
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
-    @Transactional
-    public void purgeSoftDeletedUsers() {
-        LocalDateTime threshold = LocalDateTime.now().minusDays(60);
-        List<User> targets = userRepository.findByUserStatusAndUpdatedAtBefore(UserStatus.DELETED, threshold);
-        if (targets.isEmpty())
-            return;
-        List<String> ids = targets.stream().map(User::getUserSeq).toList();
-        log.info("Hard deleting users count={} ids={}", targets.size(), ids);
-        userRepository.deleteAll(targets);
-    }
+    // @Scheduled(cron = "0 0 0 * * *")
+    // @Transactional
+    // public void purgeSoftDeletedUsers() {
+    //     LocalDateTime threshold = LocalDateTime.now().minusDays(60);
+    //     List<User> targets = userRepository.findByUserStatusAndUpdatedAtBefore(UserStatus.DELETED, threshold);
+    //     if (targets.isEmpty())
+    //         return;
+    //     List<String> ids = targets.stream().map(User::getUserSeq).toList();
+    //     log.info("Hard deleting users count={} ids={}", targets.size(), ids);
+    //     userRepository.deleteAll(targets);
+    // }
 
     // 역할 선택
     @Transactional
