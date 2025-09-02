@@ -216,6 +216,7 @@ public class UserService {
     public UserInfoResponse getUserInfo(String userSeq) {
         User user = getUserOrThrow(userSeq);
         return new UserInfoResponse(
+                user.getUserSeq(),
                 user.getEmail(),
                 user.getNickname(),
                 user.getRole(),
@@ -341,17 +342,18 @@ public class UserService {
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
-    // @Scheduled(cron = "0 0 0 * * *")
-    // @Transactional
-    // public void purgeSoftDeletedUsers() {
-    //     LocalDateTime threshold = LocalDateTime.now().minusDays(60);
-    //     List<User> targets = userRepository.findByUserStatusAndUpdatedAtBefore(UserStatus.DELETED, threshold);
-    //     if (targets.isEmpty()) 
-    //         return;
-    //     List<String> ids = targets.stream().map(User::getUserSeq).toList();
-    //     log.info("Hard deleting users count={} ids={}", targets.size(), ids);
-    //     userRepository.deleteAll(targets);
-    // }
+    // 마지막 접속 60일 지난 탈퇴 회원 완전 삭제 (매일 자정 실행)
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void purgeDeletedUsersAfterGracePeriod() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(60);
+        List<User> targets = userRepository.findByUserStatusAndLatestAtBefore(UserStatus.DELETED, threshold);
+        if (targets.isEmpty())
+            return;
+        List<String> ids = targets.stream().map(User::getUserSeq).toList();
+        log.info("Hard deleting users (60d since last access) count={} ids={}", targets.size(), ids);
+        userRepository.deleteAll(targets);
+    }
 
     // 역할 선택
     @Transactional

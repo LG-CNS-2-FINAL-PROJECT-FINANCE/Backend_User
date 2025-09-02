@@ -26,5 +26,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByNicknameContainingIgnoreCase(String nicknamePart);
 
-    // List<User> findByUserStatusAndUpdatedAtBefore(UserStatus status, LocalDateTime before);
+    List<User> findByUserStatusAndLatestAtBefore(UserStatus status, LocalDateTime before);
 }

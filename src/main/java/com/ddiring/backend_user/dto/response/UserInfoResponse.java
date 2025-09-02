@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserInfoResponse {
 
+    private String userSeq;
     private String email;
     private String nickname;
     private User.Role role;
