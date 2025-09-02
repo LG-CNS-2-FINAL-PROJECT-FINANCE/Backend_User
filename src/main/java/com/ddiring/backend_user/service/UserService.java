@@ -167,7 +167,7 @@ public class UserService {
                 .createdAt(LocalDateTime.now())
                 .updatedId("system")
                 .updatedAt(LocalDateTime.now())
-                .user_status(User.UserStatus.ACTIVE)
+                .userStatus(User.UserStatus.ACTIVE)
                 .profileCompleted(true)
                 .build();
         userRepository.save(admin);
@@ -223,7 +223,7 @@ public class UserService {
                 user.getBirthDate(),
                 user.getAge(),
                 user.getGender(),
-                user.getUser_status(),
+                user.getUserStatus(),
                 user.getLatestAt());
     }
 
@@ -238,7 +238,7 @@ public class UserService {
                         user.getRole(),
                         user.getAge(),
                         user.getGender(),
-                        user.getUser_status(),
+                        user.getUserStatus(),
                         user.getLatestAt()))
                 .collect(Collectors.toList());
     }
@@ -259,7 +259,7 @@ public class UserService {
                         user.getRole(),
                         user.getAge(),
                         user.getGender(),
-                        user.getUser_status(),
+                        user.getUserStatus(),
                         user.getLatestAt()))
                 .toList();
     }

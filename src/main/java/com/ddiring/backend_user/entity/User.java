@@ -59,7 +59,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status")
-    private UserStatus user_status;
     private UserStatus userStatus;
 
     @Column(name = "latest_at")
