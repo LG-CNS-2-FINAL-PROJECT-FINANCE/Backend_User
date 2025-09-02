@@ -72,7 +72,7 @@ public class UserService {
                         .latestAt(LocalDateTime.now())
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
-                        .user_status(User.UserStatus.ACTIVE)
+                        .userStatus(User.UserStatus.ACTIVE)
                         .profileCompleted(hasAdditional)
                         .build();
                 u = userRepository.save(u);
@@ -138,7 +138,7 @@ public class UserService {
         user.setGender(request.getGender());
         user.setBirthDate(request.getBirthDate());
         user.setAge(calculateAge(request.getBirthDate()));
-        user.setUser_status(User.UserStatus.ACTIVE);
+        user.setUserStatus(User.UserStatus.ACTIVE);
         user.setProfileCompleted(true);
         userRepository.save(user);
     }
@@ -402,7 +402,7 @@ public class UserService {
     @Transactional
     public ResponseEntity<String> updateUserStatusWithResponse(String userSeq, User.UserStatus status) {
         User user = updateUserStatus(userSeq, status);
-        return ResponseEntity.ok("사용자 상태가 변경되었습니다. 현재 상태: " + user.getUser_status());
+        return ResponseEntity.ok("사용자 상태가 변경되었습니다. 현재 상태: " + user.getUserStatus());
     }
 
     // 공통: 사용자 조회

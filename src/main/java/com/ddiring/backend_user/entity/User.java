@@ -60,6 +60,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status")
     private UserStatus user_status;
+    private UserStatus userStatus;
 
     @Column(name = "latest_at")
     private LocalDateTime latestAt;
@@ -96,7 +97,7 @@ public class User {
     }
 
     public void updateUserStatus(UserStatus status) {
-        this.user_status = status;
+        this.userStatus = status;
         this.updatedAt = LocalDateTime.now();
     }
 
