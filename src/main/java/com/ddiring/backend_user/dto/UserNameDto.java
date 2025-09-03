@@ -12,5 +12,4 @@ import lombok.Setter;
 public class UserNameDto {
 
     private String userName;
-    private String nickname;
 }

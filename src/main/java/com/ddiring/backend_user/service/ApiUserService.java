@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,7 +25,9 @@ public class ApiUserService {
                 .toList();
     }
 
-    public Optional<UserNameDto> getUserName(String userSeq) {
-        return userRepository.findByUserSeq(userSeq, UserNameDto.class);
+    public UserNameDto getUserName(String userSeq) {
+        return userRepository.findByUserSeq(userSeq)
+                .map(user -> new UserNameDto(user.getUserName()))
+                .orElse(null);
     }
 }
