@@ -1,6 +1,8 @@
 package com.ddiring.backend_user.controller;
 
+import com.ddiring.backend_user.common.dto.ApiResponseDto;
 import com.ddiring.backend_user.dto.UserDTO;
+import com.ddiring.backend_user.dto.request.SignDto;
 import com.ddiring.backend_user.service.ApiUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,5 +23,11 @@ public class ApiUserController {
     @PostMapping("/detail")
     public List<UserDTO> getUserInfo(@RequestBody List<String> userInfo) {
         return apiUserService.getUserInfo(userInfo);
+    }
+
+    //판매 주문 접수 서명 준비
+    @PostMapping("/sell/sign")
+    public ApiResponseDto<SignDto> signReady(@RequestBody SignDto signDto) {
+        return ApiResponseDto.createOk(signDto);
     }
 }
