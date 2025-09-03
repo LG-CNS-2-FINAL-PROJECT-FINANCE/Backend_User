@@ -34,7 +34,8 @@ public class SecurityConfig {
                                                                 "/api/user/auth/admin/login",
                                                                 "/api/user/auth/admin/signup",
                                                                 "/api/user/logout",
-                                                                "/api/user/detail"
+                                                                "/api/user/detail",
+                                                                "/api/user/{userSeq}"
                                                 // "/actuator/**",
                                                 // "localhost:9090",
                                                 // "localhost:3000"
