@@ -34,10 +34,7 @@ public class SecurityConfig {
                                                                 "/api/user/auth/admin/login",
                                                                 "/api/user/auth/admin/signup",
                                                                 "/api/user/logout",
-                                                                "/api/user/detail",
-                                                                "/api/user/{userSeq}",
-                                                                "/api/kyc/resident-id/verify",
-                                                                "/api/monitoring/**"
+                                                                "/api/user/detail"
                                                 // "/actuator/**",
                                                 // "localhost:9090",
                                                 // "localhost:3000"
@@ -49,7 +46,8 @@ public class SecurityConfig {
                                                 .hasAnyRole("USER", "CREATOR", "GUEST", "ADMIN")
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
-                                                                "/api/user/info")
+                                                                "/api/user/info",
+                                                                "/api/user/{userSeq}")
                                                 .hasAnyRole("USER", "CREATOR", "GUEST", "ADMIN")
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
