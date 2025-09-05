@@ -35,7 +35,9 @@ public class SecurityConfig {
                                                                 "/api/user/auth/admin/signup",
                                                                 "/api/user/logout",
                                                                 "/api/user/detail",
-                                                                "/api/user/{userSeq}"
+                                                                "/api/user/{userSeq}",
+                                                                "/api/kyc/resident-id/verify",
+                                                                "/api/monitoring/**"
                                                 // "/actuator/**",
                                                 // "localhost:9090",
                                                 // "localhost:3000"
