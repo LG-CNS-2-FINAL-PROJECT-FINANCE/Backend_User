@@ -16,8 +16,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     boolean existsByAdminId(String adminId);
 
-    boolean existsByEmail(String email);
-
     List<User> findByUserSeqIn(List<String> userInfo);
 
     Optional<User> findByEmail(String email);
