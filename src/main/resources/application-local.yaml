@@ -28,7 +28,7 @@ spring:
 
   kakao:
     client-id: b4b2d8c256a781c939214bc2360fef37
-    redirect-uri: http://127.0.0.1:3000/login/kakaoConfirm
+    redirect-uri: https://d3mde8t9hgx3wg.cloudfront.net/login/kakaoConfirm
     client-secret: VtEJApm3TPWTu7aDuvlmrwzDg8klmhcw
     scope: account_email
 
